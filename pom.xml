@@ -18,17 +18,32 @@
 
 	<modules>
 		<module>foafssl-verifier</module>
-<!--
-		<module>foafssl-filter</module>
--->
+		<module>foafssl-checkclient-webapp</module>
 	</modules>
 
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
+				<groupId>net.java.dev.sommer</groupId>
+				<artifactId>foafssl-verifier</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+			<dependency>
+				<groupId>net.java.dev.sommer</groupId>
+				<artifactId>foafssl-checkclient-webapp</artifactId>
+				<version>1.0-SNAPSHOT</version>
+			</dependency>
+
+			<dependency>
 				<groupId>junit</groupId>
 				<artifactId>junit</artifactId>
 				<version>4.4</version>
+			</dependency>
+
+			<dependency>
+				<groupId>bouncycastle</groupId>
+				<artifactId>bcprov-jdk15</artifactId>
+				<version>140</version>
 			</dependency>
 
 			<dependency>
