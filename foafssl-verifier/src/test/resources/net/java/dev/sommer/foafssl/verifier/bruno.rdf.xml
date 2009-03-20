@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<rdf:RDF xmlns="http://xmlns.com/foaf/0.1/" xmlns:cert="http://www.w3.org/ns/auth/cert#"
+	xmlns:contact="http://www.w3.org/2000/10/swap/pim/contact#" xmlns:foaf="http://xmlns.com/foaf/0.1/"
+	xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:iana="http://www.iana.org/assignments/relation/"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+	xmlns:rsa="http://www.w3.org/ns/auth/rsa#">
+
+	<PersonalProfileDocument rdf:about="http://www.harbulot.com/foaf/bruno">
+		<iana:alternate rdf:resource="http://www.harbulot.com/foaf/bruno.rdf" />
+		<maker rdf:resource="http://www.harbulot.com/foaf/bruno#me" />
+		<primaryTopic rdf:resource="http://www.harbulot.com/foaf/bruno#me" />
+		<title>Bruno Harbulot's FOAF file</title>
+	</PersonalProfileDocument>
+
+	<Person rdf:about="http://www.harbulot.com/foaf/bruno#me">
+		<sameAs xmlns="http://www.w3.org/2002/07/owl#" rdf:resource="http://www.harbulot.com/foaf/bruno#me" />
+		<family_name>Harbulot</family_name>
+		<gender>male</gender>
+		<givenname>Bruno</givenname>
+		<name>Bruno Harbulot</name>
+		<workplaceHomepage rdf:resource="http://www.manchester.ac.uk/" />
+		<knows rdf:resource="http://bblfish.net/people/henry/card#me" />
+	</Person>
+
+	<rdf:Description>
+		<rdf:type rdf:resource="http://www.w3.org/ns/auth/rsa#RSAPublicKey" />
+		<cert:identity rdf:resource="http://www.harbulot.com/foaf/bruno#me" />
+		<rsa:modulus rdf:parseType="Resource">
+			<cert:hex>8960bfae7350bdeb1efe5df04b4004e00aab9273444f64cb914534419edef3193bcc62ce581620e9f7010a3266ff2db3439bdf0d2340ef58748d941f6a54407185f3a01b7df35daeb52b7ed7d03666afeb1ef08961a070523107ee6d313500f134b72bc4683182b49f908d013b6ddd8e12171198341cbc3caa49b14160c3a081</cert:hex>
+		</rsa:modulus>
+		<rsa:public_exponent rdf:parseType="Resource">
+			<cert:decimal>65537</cert:decimal>
+		</rsa:public_exponent>
+	</rdf:Description>
+    
+    <rdf:Description>
+        <rdf:type rdf:resource="http://www.w3.org/ns/auth/rsa#RSAPublicKey"/>
+        <cert:identity>
+        	<rdf:Description rdf:about="http://bblfish.net/people/henry/card#me">
+        		<rdf:type rdf:resource="http://xmlns.com/foaf/0.1/Person"/>
+				<name>Henry Story</name>
+			</rdf:Description>
+        </cert:identity>
+        <rsa:modulus rdf:parseType="Resource">
+            <cert:hex>862d6e0b8c3252a79d6eb82966f14e495c839ec2d57983ec39bfac79f8a99f887a3ca559cfee438e90f73da143cefc0a849509d8d91e7093a94c1a39863a5bed78a0f0234a372f12dce0a9535b14d92d56827b3791352b5817681ad7949aa7831911d51827a57e46bad9190d73a69ce56ada74a59ddc0df2a7a31247bbd67445</cert:hex>
+        </rsa:modulus>
+        <rsa:public_exponent rdf:parseType="Resource">
+            <cert:decimal>65537</cert:decimal>
+        </rsa:public_exponent>
+    </rdf:Description> 
+</rdf:RDF>
