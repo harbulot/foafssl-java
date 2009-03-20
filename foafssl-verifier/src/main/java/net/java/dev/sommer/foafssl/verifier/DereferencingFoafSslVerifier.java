@@ -66,7 +66,7 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author Henry Story.
  * @author Bruno Harbulot.
  */
-public class DereferencingFoafSslVerifier {
+public class DereferencingFoafSslVerifier implements FoafSslVerifier {
 	static transient Logger log = Logger
 			.getLogger(DereferencingFoafSslVerifier.class.getName());
 
