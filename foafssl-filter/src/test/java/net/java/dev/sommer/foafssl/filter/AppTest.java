@@ -1,4 +1,4 @@
-package net.java.dev.sommer.foafssl.foafssl_filter;
+package net.java.dev.sommer.foafssl.filter;
 
 import junit.framework.Test;
 import junit.framework.TestCase;

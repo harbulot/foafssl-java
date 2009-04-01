@@ -34,8 +34,9 @@ package net.java.dev.sommer.foafssl.verifier;
 
 import java.security.cert.X509Certificate;
 import java.io.IOException;
-import java.net.URI;
 import java.util.Collection;
+
+import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 
 import org.openrdf.OpenRDFException;
 
@@ -43,6 +44,6 @@ import org.openrdf.OpenRDFException;
  * @author Bruno Harbulot.
  */
 public interface FoafSslVerifier {
-	public abstract Collection<URI> verifyFoafSslCertificate(
-			X509Certificate clientCert) throws OpenRDFException, IOException;
+    public abstract Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
+	    X509Certificate clientCert) throws OpenRDFException, IOException;
 }
