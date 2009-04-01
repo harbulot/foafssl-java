@@ -18,7 +18,11 @@
 			<groupId>net.java.dev.sommer</groupId>
 			<artifactId>foafssl-verifier</artifactId>
 		</dependency>
-
+		<dependency>
+                        <!-- this is a bit heavy of a dependency -->
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-principals</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>bouncycastle</groupId>
 			<artifactId>bcprov-jdk15</artifactId>

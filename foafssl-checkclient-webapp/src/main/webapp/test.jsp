@@ -1,10 +1,9 @@
-<%@page language="java" contentType="text/plain; charset=ISO-8859-1"
-	pageEncoding="ISO-8859-1"%>
+<%@page language="java" contentType="text/plain; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ page import="java.security.cert.X509Certificate"%>
 <%@ page import="javax.security.auth.x500.X500Principal"%>
 <%@ page import="java.net.URI"%>
-<%@ page
-	import="net.java.dev.sommer.foafssl.verifier.DereferencingFoafSslVerifier"%>
+<%@ page import="net.java.dev.sommer.foafssl.principals.FoafSslPrincipal"%>
+<%@ page import="net.java.dev.sommer.foafssl.verifier.DereferencingFoafSslVerifier"%>
 <%
 	X509Certificate[] certs = (X509Certificate[]) request
 			.getAttribute("javax.servlet.request.X509Certificate");
@@ -21,9 +20,9 @@
 		DereferencingFoafSslVerifier verifier = new DereferencingFoafSslVerifier();
 
 		out.println("Verified URIs:");
-		for (URI verifiedUri : verifier
+		for (FoafSslPrincipal verifiedUri : verifier
 				.verifyFoafSslCertificate(clientCert)) {
-			out.println(" - " + verifiedUri);
+			out.println(" - " + verifiedUri.getUri());
 		}
 	}
 %>
