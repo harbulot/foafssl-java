@@ -19,7 +19,7 @@
 			<artifactId>foafssl-verifier</artifactId>
 		</dependency>
 		<dependency>
-                        <!-- this is a bit heavy of a dependency -->
+                        <!-- it is a bit much to have a dependency on one class -->
 			<groupId>net.java.dev.sommer</groupId>
 			<artifactId>foafssl-principals</artifactId>
 		</dependency>
