@@ -5,8 +5,16 @@
         <servlet-name>simple login</servlet-name>
         <servlet-class>simpleLogin</servlet-class>
         </servlet>
+    <servlet>
+        <servlet-name>InsecureLoginService</servlet-name>
+        <servlet-class>net.java.dev.sommer.foafssl.login.InsecureLogin</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>simple login</servlet-name>
         <url-pattern>/simpleLogin</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>InsecureLoginService</servlet-name>
+        <url-pattern>/insecureLogin</url-pattern>
     </servlet-mapping>
     </web-app>
