@@ -49,10 +49,8 @@ import org.junit.Test;
  * @author Bruno Harbulot.
  */
 public class DereferencingFoafSslVerifierTest {
-    public static final URI BRUNO_FOAF_URI = URI
-	    .create("http://www.harbulot.com/foaf/bruno#me");
-    public static final URI BRUNO_FOAF_DOC_URI = URI
-	    .create("http://www.harbulot.com/foaf/bruno");
+    public static final URI BRUNO_FOAF_URI = URI.create("http://www.harbulot.com/foaf/bruno#me");
+    public static final URI BRUNO_FOAF_DOC_URI = URI.create("http://www.harbulot.com/foaf/bruno");
 
     public static final String TEST_BRUNO_FOAF_FILENAME = "bruno.rdf.xml";
     public static final String TEST_BRUNO_WRONG_FOAF_FILENAME = "bruno-wrong.rdf.xml";
@@ -63,58 +61,56 @@ public class DereferencingFoafSslVerifierTest {
 
     @Before
     public void setUp() throws Exception {
-	Security.addProvider(new BouncyCastleProvider());
-	this.verifier = new DereferencingFoafSslVerifier();
+        Security.addProvider(new BouncyCastleProvider());
+        this.verifier = new DereferencingFoafSslVerifier();
 
-	InputStreamReader certReader = new InputStreamReader(
-		DereferencingFoafSslVerifierTest.class
-			.getResourceAsStream(TEST_BRUNO_CERT_FILENAME));
+        InputStreamReader certReader = new InputStreamReader(DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_BRUNO_CERT_FILENAME));
 
-	PEMReader pemReader = new PEMReader(certReader);
-	while (pemReader.ready()) {
-	    Object pemObject = pemReader.readObject();
-	    if (pemObject instanceof X509Certificate) {
-		x509Certificate = (X509Certificate) pemObject;
-		break;
-	    } else {
-		throw new RuntimeException("Unknown type of PEM object: "
-			+ pemObject);
-	    }
-	}
-	pemReader.close();
+        PEMReader pemReader = new PEMReader(certReader);
+        while (pemReader.ready()) {
+            Object pemObject = pemReader.readObject();
+            if (pemObject instanceof X509Certificate) {
+                x509Certificate = (X509Certificate) pemObject;
+                break;
+            } else {
+                throw new RuntimeException("Unknown type of PEM object: " + pemObject);
+            }
+        }
+        pemReader.close();
     }
 
     @Test
     public void testGoodLocalFoafFile() throws Exception {
 
-	InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
-		.getResourceAsStream(TEST_BRUNO_FOAF_FILENAME);
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_BRUNO_FOAF_FILENAME);
 
-	try {
-	    assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI,
-		    this.x509Certificate.getPublicKey(), BRUNO_FOAF_DOC_URI
-			    .toURL(), foafInputStream, "application/rdf+xml"));
-	} finally {
-	    foafInputStream.close();
-	}
+        try {
+            assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
+                    .getPublicKey(), BRUNO_FOAF_DOC_URI.toURL(), foafInputStream,
+                    "application/rdf+xml"));
+        } finally {
+            foafInputStream.close();
+        }
     }
 
     @Test
     public void testBadLocalFoafFile() throws Exception {
-	InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
-		.getResourceAsStream(TEST_BRUNO_WRONG_FOAF_FILENAME);
-	try {
-	    assertNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI,
-		    this.x509Certificate.getPublicKey(), BRUNO_FOAF_DOC_URI
-			    .toURL(), foafInputStream, "application/rdf+xml"));
-	} finally {
-	    foafInputStream.close();
-	}
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_BRUNO_WRONG_FOAF_FILENAME);
+        try {
+            assertNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
+                    .getPublicKey(), BRUNO_FOAF_DOC_URI.toURL(), foafInputStream,
+                    "application/rdf+xml"));
+        } finally {
+            foafInputStream.close();
+        }
     }
 
     @Test
     public void testRemoteFoafFile() throws Exception {
-	assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI,
-		this.x509Certificate.getPublicKey()));
+        assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
+                .getPublicKey()));
     }
 }

@@ -10,14 +10,14 @@ public abstract class FoafSslPrincipal implements Principal {
     protected final URI uri;
 
     public FoafSslPrincipal(URI uri) {
-	this.uri = uri;
+        this.uri = uri;
     }
 
     public URI getUri() {
-	return this.uri;
+        return this.uri;
     }
 
     public String getName() {
-	return getUri().toASCIIString();
+        return getUri().toASCIIString();
     }
 }

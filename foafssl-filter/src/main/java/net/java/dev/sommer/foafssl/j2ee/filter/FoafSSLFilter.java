@@ -18,38 +18,39 @@ import org.openrdf.OpenRDFException;
 
 /**
  * Hello world!
- *
+ * 
  */
 public class FoafSSLFilter implements Filter {
 
-	public static final String PRINCIPALS_ATTR_NAME = "net.java.dev.sommer.foafssl.j2ee.principals";
+    public static final String PRINCIPALS_ATTR_NAME = "net.java.dev.sommer.foafssl.j2ee.principals";
 
-	public void init(FilterConfig arg0) throws ServletException {
-		//do nothing. Perhaps this sets path regexps arguments?
-	}
+    public void init(FilterConfig arg0) throws ServletException {
+        // do nothing. Perhaps this sets path regexps arguments?
+    }
 
-	public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain) throws IOException, ServletException {
-		DereferencingFoafSslVerifier verif = new DereferencingFoafSslVerifier();
-		X509Certificate[] certs =
-				  (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
-		Collection<? extends FoafSslPrincipal> pls;
-		try {
-			pls = verif.verifyFoafSslCertificate(certs[0]);
-			if (pls ==null || pls.size()==0) {
-				resp.getOutputStream().write("No foaf+ssl certificates".getBytes());
-				return;
-			}
-		} catch (OpenRDFException ex) {
-			Logger.getLogger(FoafSSLFilter.class.getName()).log(Level.SEVERE, null, ex);
-			resp.getOutputStream().write("cought error doing verification:".getBytes());
-			ex.printStackTrace(new PrintStream(resp.getOutputStream()));
-			return;
-		}
-		req.setAttribute(PRINCIPALS_ATTR_NAME,pls);
-		chain.doFilter(req, resp);
-	}
+    public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
+            throws IOException, ServletException {
+        DereferencingFoafSslVerifier verif = new DereferencingFoafSslVerifier();
+        X509Certificate[] certs = (X509Certificate[]) req
+                .getAttribute("javax.servlet.request.X509Certificate");
+        Collection<? extends FoafSslPrincipal> pls;
+        try {
+            pls = verif.verifyFoafSslCertificate(certs[0]);
+            if (pls == null || pls.size() == 0) {
+                resp.getOutputStream().write("No foaf+ssl certificates".getBytes());
+                return;
+            }
+        } catch (OpenRDFException ex) {
+            Logger.getLogger(FoafSSLFilter.class.getName()).log(Level.SEVERE, null, ex);
+            resp.getOutputStream().write("cought error doing verification:".getBytes());
+            ex.printStackTrace(new PrintStream(resp.getOutputStream()));
+            return;
+        }
+        req.setAttribute(PRINCIPALS_ATTR_NAME, pls);
+        chain.doFilter(req, resp);
+    }
 
-	public void destroy() {
-		//do nothing yet
-	}
+    public void destroy() {
+        // do nothing yet
+    }
 }

@@ -20,120 +20,144 @@ import net.java.dev.sommer.foafssl.verifier.DereferencingFoafSslVerifier;
 import org.openrdf.OpenRDFException;
 
 /**
- * A very simple Insecure Login Servlet for sites that want to play with foaf+ssl but do not
- * have https, or do not want to bother with the setup yet. (It is of course recommended
- * to later own the infrastructure)
- *
+ * A very simple Insecure Login Servlet for sites that want to play with
+ * foaf+ssl but do not have https, or do not want to bother with the setup yet.
+ * (It is of course recommended to later own the infrastructure)
+ * 
  * This is based on Melvin Carvalho's initial php code
  * http://lists.foaf-project.org/pipermail/foaf-protocols/2009-March/000386.html
- *
+ * 
  * @author hjs
  */
 public class InsecureLogin extends HttpServlet {
 
-   public static final transient Logger log = Logger.getLogger(InsecureLogin.class.getName());
+    public static final transient Logger log = Logger.getLogger(InsecureLogin.class.getName());
 
-   /**
-    * Processes requests for both HTTP <code>GET</code> and <code>POST</code> methods.
-    * @param request servlet request
-    * @param response servlet response
-    * @throws ServletException if a servlet-specific error occurs
-    * @throws IOException if an I/O error occurs
-    */
-   protected void processRequest(HttpServletRequest req, HttpServletResponse res)
-           throws ServletException, IOException {
-      String return_to_str =  req.getParameter("return_to");
-      URL rt = null;
-      if (return_to_str != null && return_to_str.length() > 0) {
-         try {
-            rt = new URL(return_to_str);
-         } catch (MalformedURLException ex) {
-            log.info("request had malformed return_to url:" + return_to_str);
-         }
-      }
-      if (rt == null) {
-         rt = getReferer(req);
-      }
-
-      X509Certificate[] certs = (X509Certificate[]) req.getAttribute("javax.servlet.request.X509Certificate");
-      if (certs == null) {
-         //no login
-         try {
-            rt = new URL(rt.getProtocol(), rt.getHost(), rt.getPort(), rt.getPath() + "?failure=nocert");
-         } catch (MalformedURLException ex) {
-            log.info("cannot build failure url for " + rt);
-         }
-      } else {
-         try {
-            X509Certificate clientCert = certs[0];
-            DereferencingFoafSslVerifier verifier = new DereferencingFoafSslVerifier();
-            for (FoafSslPrincipal webid : verifier.verifyFoafSslCertificate(clientCert)) {
-               if (webid == null) continue; //should not happen
-               try {
-                  rt = new URL(rt.getProtocol(), rt.getHost(), rt.getPort(), rt.getPath() +
-                          "?webid=" + URLEncoder.encode(webid.getUri().toString(),"UTF-8"));
-                  break;
-               } catch (MalformedURLException ex) {
-                  log.info("cannot build failure url for " + rt + " responding with webid=" + webid);
-               }
+    /**
+     * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
+     * methods.
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * @throws ServletException
+     *             if a servlet-specific error occurs
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    protected void processRequest(HttpServletRequest req, HttpServletResponse res)
+            throws ServletException, IOException {
+        String return_to_str = req.getParameter("return_to");
+        URL rt = null;
+        if (return_to_str != null && return_to_str.length() > 0) {
+            try {
+                rt = new URL(return_to_str);
+            } catch (MalformedURLException ex) {
+                log.info("request had malformed return_to url:" + return_to_str);
             }
-         } catch (OpenRDFException ex) {
-            log.log(Level.INFO, "exception trying to login client", ex);
-         }
-      }
-      //if rt is still null here, then the user has to use the back button
-      //else redirect
-      res.sendRedirect(rt.toExternalForm());
-   }
+        }
+        if (rt == null) {
+            rt = getReferer(req);
+        }
 
-// <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
-   /**
-    * Handles the HTTP <code>GET</code> method.
-    * @param request servlet request
-    * @param response servlet response
-    * @throws ServletException if a servlet-specific error occurs
-    * @throws IOException if an I/O error occurs
-    */
-   @Override
-   protected void doGet(HttpServletRequest request, HttpServletResponse response)
-           throws ServletException, IOException {
-      processRequest(request, response);
-   }
+        X509Certificate[] certs = (X509Certificate[]) req
+                .getAttribute("javax.servlet.request.X509Certificate");
+        if (certs == null) {
+            // no login
+            try {
+                rt = new URL(rt.getProtocol(), rt.getHost(), rt.getPort(), rt.getPath()
+                        + "?failure=nocert");
+            } catch (MalformedURLException ex) {
+                log.info("cannot build failure url for " + rt);
+            }
+        } else {
+            try {
+                X509Certificate clientCert = certs[0];
+                DereferencingFoafSslVerifier verifier = new DereferencingFoafSslVerifier();
+                for (FoafSslPrincipal webid : verifier.verifyFoafSslCertificate(clientCert)) {
+                    if (webid == null)
+                        continue; // should not happen
+                    try {
+                        rt = new URL(rt.getProtocol(), rt.getHost(), rt.getPort(), rt.getPath()
+                                + "?webid=" + URLEncoder.encode(webid.getUri().toString(), "UTF-8"));
+                        break;
+                    } catch (MalformedURLException ex) {
+                        log.info("cannot build failure url for " + rt + " responding with webid="
+                                + webid);
+                    }
+                }
+            } catch (OpenRDFException ex) {
+                log.log(Level.INFO, "exception trying to login client", ex);
+            }
+        }
+        // if rt is still null here, then the user has to use the back button
+        // else redirect
+        res.sendRedirect(rt.toExternalForm());
+    }
 
-   /**
-    * Handles the HTTP <code>POST</code> method.
-    * @param request servlet request
-    * @param response servlet response
-    * @throws ServletException if a servlet-specific error occurs
-    * @throws IOException if an I/O error occurs
-    */
-   @Override
-   protected void doPost(HttpServletRequest request, HttpServletResponse response)
-           throws ServletException, IOException {
-      processRequest(request, response);
-   }
+    // <editor-fold defaultstate="collapsed"
+    // desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
+    /**
+     * Handles the HTTP <code>GET</code> method.
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * @throws ServletException
+     *             if a servlet-specific error occurs
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
-   /**
-    * Returns a short description of the servlet.
-    * @return a String containing servlet description
-    */
-   @Override
-   public String getServletInfo() {
-      return "A simple Insecure login service. \n" +
-              " Initial request should have a return_to=${ResponseUrl} attribute value.\n" +
-              " On successful authentication the  client browser will be redirected to ${ResponseUrl}?webid=${webid}.\n" +
-              " On failre the client will be redirected to ${ResponseUrl}?failure \n" +
-              " The service is insecure because there is a risk of man in the middle attacks in the response.";
-   }// </editor-fold>
+    /**
+     * Handles the HTTP <code>POST</code> method.
+     * 
+     * @param request
+     *            servlet request
+     * @param response
+     *            servlet response
+     * @throws ServletException
+     *             if a servlet-specific error occurs
+     * @throws IOException
+     *             if an I/O error occurs
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
-   private URL getReferer(HttpServletRequest req) {
-      String referer_str = req.getHeader("Referer");
-      try {
-         URL result = new URL(referer_str); //todo: this could be a relative URL, in which case it needs to be absolutized.
-         return result;
-      } catch (MalformedURLException ex) {
-         log.log(Level.INFO, "malformed referer url:" + referer_str, ex);
-         return null;
-      }
-   }
+    /**
+     * Returns a short description of the servlet.
+     * 
+     * @return a String containing servlet description
+     */
+    @Override
+    public String getServletInfo() {
+        return "A simple Insecure login service. \n"
+                + " Initial request should have a return_to=${ResponseUrl} attribute value.\n"
+                + " On successful authentication the  client browser will be redirected to ${ResponseUrl}?webid=${webid}.\n"
+                + " On failre the client will be redirected to ${ResponseUrl}?failure \n"
+                + " The service is insecure because there is a risk of man in the middle attacks in the response.";
+    }// </editor-fold>
+
+    private URL getReferer(HttpServletRequest req) {
+        String referer_str = req.getHeader("Referer");
+        try {
+            URL result = new URL(referer_str); // todo: this could be a relative
+                                               // URL, in which case it needs to
+                                               // be absolutized.
+            return result;
+        } catch (MalformedURLException ex) {
+            log.log(Level.INFO, "malformed referer url:" + referer_str, ex);
+            return null;
+        }
+    }
 }

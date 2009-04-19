@@ -45,12 +45,13 @@ import org.openrdf.OpenRDFException;
  */
 public interface FoafSslVerifier {
 
-	 /**
-     * @param clientCert a x509 cerificate, hopefully with an foaf+ssl alternative name
+    /**
+     * @param clientCert
+     *            a x509 cerificate, hopefully with an foaf+ssl alternative name
      * @return a collection of verified Principals.
      * @throws org.openrdf.OpenRDFException
      * @throws java.io.IOException
      */
     public abstract Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
-	    X509Certificate clientCert) throws OpenRDFException, IOException;
+            X509Certificate clientCert) throws OpenRDFException, IOException;
 }
