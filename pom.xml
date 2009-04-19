@@ -5,9 +5,16 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.3</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
+
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENCE.txt</url>
+		</license>
+	</licenses>
 
 	<repositories>
 		<repository>
@@ -20,8 +27,10 @@
 	<modules>
 		<module>foafssl-principals</module>
 		<module>foafssl-verifier</module>
-		<module>foafssl-checkclient-webapp</module>
-		<module>foafssl-filter</module>
+		<!--
+			<module>foafssl-checkclient-webapp</module>
+			<module>foafssl-filter</module>
+		-->
 	</modules>
 
 	<dependencyManagement>
@@ -29,23 +38,21 @@
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-principals</artifactId>
-				<version>0.3-SNAPSHOT</version>
+				<version>0.3</version>
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-verifier</artifactId>
-				<version>0.3-SNAPSHOT</version>
+				<version>0.3</version>
 			</dependency>
-			<dependency>
-				<groupId>net.java.dev.sommer</groupId>
+			<!--
+				<dependency> <groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-checkclient-webapp</artifactId>
-				<version>0.3-SNAPSHOT</version>
-			</dependency>
-			<dependency>
+				<version>0.3-SNAPSHOT</version> </dependency> <dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-filter</artifactId>
-				<version>0.3-SNAPSHOT</version>
-			</dependency>
+				<version>0.3-SNAPSHOT</version> </dependency>
+			-->
 
 			<dependency>
 				<groupId>junit</groupId>

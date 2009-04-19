@@ -4,12 +4,12 @@
 	<parent>
 		<groupId>net.java.dev.sommer</groupId>
 		<artifactId>foafssl</artifactId>
-		<version>0.3-SNAPSHOT</version>
+		<version>0.3</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>foafssl-principals</artifactId>
 	<packaging>jar</packaging>
-	<version>0.3-SNAPSHOT</version>
+	<version>0.3</version>
 	<name>FOAF+SSL :: Principals</name>
 	<url>http://sommer.dev.java.net/</url>
 </project>
