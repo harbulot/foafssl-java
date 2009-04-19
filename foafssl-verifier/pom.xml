@@ -13,6 +13,13 @@
 	<name>FOAF+SSL :: Verifier</name>
 	<url>http://sommer.dev.java.net/</url>
 
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENCE.txt</url>
+		</license>
+	</licenses>
+
 	<dependencies>
 		<dependency>
 			<groupId>net.java.dev.sommer</groupId>

@@ -1,39 +1,47 @@
 <?xml version="1.0"?>
 <project>
-   <parent>
-      <groupId>net.java.dev.sommer</groupId>
-      <artifactId>foafssl</artifactId>
-      <version>0.4-SNAPSHOT</version>
-      <relativePath>../pom.xml</relativePath>
-   </parent>
-   <name>FOAF+SSL :: Servlet Filter</name>
-   <description>A Servlet Filter to do the authentication.</description>
-   <artifactId>foafssl-filter</artifactId>
-   <version>0.4-SNAPSHOT</version>
-   <modelVersion>4.0.0</modelVersion>
-   <url>http://maven.apache.org</url>
-   <dependencies>
-      <dependency>
+	<parent>
+		<groupId>net.java.dev.sommer</groupId>
+		<artifactId>foafssl</artifactId>
+		<version>0.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<name>FOAF+SSL :: Servlet Filter</name>
+	<description>A Servlet Filter to do the authentication.</description>
+	<artifactId>foafssl-filter</artifactId>
+	<version>0.4-SNAPSHOT</version>
+	<modelVersion>4.0.0</modelVersion>
+	<url>http://maven.apache.org</url>
+
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENCE.txt</url>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
 			<!--
 				see module howto:
 				http://docs.codehaus.org/display/MAVENUSER/Multi-modules+projects
 			-->
-         <groupId>net.java.dev.sommer</groupId>
-         <artifactId>foafssl-verifier</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>net.java.dev.sommer</groupId>
-         <artifactId>foafssl-principals</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>javax.servlet</groupId>
-         <artifactId>servlet-api</artifactId>
-         <version>2.5</version>
-      </dependency>
-   </dependencies>
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-verifier</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-principals</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+		</dependency>
+	</dependencies>
 </project>

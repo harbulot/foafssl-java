@@ -1,72 +1,79 @@
 
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <groupId>net.java.dev.sommer</groupId>
-        <artifactId>foafssl</artifactId>
-        <version>0.4-SNAPSHOT</version>
-        <relativePath>../pom.xml</relativePath>
-    </parent>
-    <artifactId>foafssl-checkclient-webapp</artifactId>
-    <packaging>war</packaging>
-    <version>0.4-SNAPSHOT</version>
-    <name>FOAF+SSL :: CheckClient Webapp</name>
-    <url>http://sommer.dev.java.net/</url>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>net.java.dev.sommer</groupId>
+		<artifactId>foafssl</artifactId>
+		<version>0.4-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	<artifactId>foafssl-checkclient-webapp</artifactId>
+	<packaging>war</packaging>
+	<version>0.4-SNAPSHOT</version>
+	<name>FOAF+SSL :: CheckClient Webapp</name>
+	<url>http://sommer.dev.java.net/</url>
 
-    <dependencies>
-        <dependency>
-            <groupId>net.java.dev.sommer</groupId>
-            <artifactId>foafssl-verifier</artifactId>
-        </dependency>
-        <dependency>
-                        <!-- it is a bit much to have a dependency on one class -->
-            <groupId>net.java.dev.sommer</groupId>
-            <artifactId>foafssl-principals</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>bouncycastle</groupId>
-            <artifactId>bcprov-jdk15</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>servlet-api</artifactId>
-            <version>2.5</version>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.4.3</version>
-            <exclusions>
+	<licenses>
+		<license>
+			<name>BSD</name>
+			<url>LICENCE.txt</url>
+		</license>
+	</licenses>
+
+	<dependencies>
+		<dependency>
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-verifier</artifactId>
+		</dependency>
+		<dependency>
+			<!-- it is a bit much to have a dependency on one class -->
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-principals</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>bouncycastle</groupId>
+			<artifactId>bcprov-jdk15</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.4.3</version>
+			<exclusions>
 				<!--
 					needed to avoid endless recursion, per:
 					http://www.slf4j.org/legacy.html
 				-->
-                <exclusion>
-                    <groupId>org.slf4j</groupId>
-                    <artifactId>slf4j-jdk14</artifactId>
-                </exclusion>
-            </exclusions>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>jul-to-slf4j</artifactId>
-            <version>1.5.2</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.5.2</version>
-            <scope>runtime</scope>
-        </dependency>
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.12</version>
-            <scope>runtime</scope>
-        </dependency>
-    </dependencies>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-jdk14</artifactId>
+				</exclusion>
+			</exclusions>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>1.5.2</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.5.2</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>log4j</groupId>
+			<artifactId>log4j</artifactId>
+			<version>1.2.12</version>
+			<scope>runtime</scope>
+		</dependency>
+	</dependencies>
 </project>
