@@ -1,7 +1,7 @@
 /*
 New BSD license: http://opensource.org/licenses/bsd-license.php
 
-Copyright (c) 2008 Sun Microsystems, Inc.
+Copyright (c) 2008-2009 Sun Microsystems, Inc.
 901 San Antonio Road, Palo Alto, CA 94303 USA. 
 All rights reserved.
 
@@ -41,13 +41,18 @@ import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 import org.openrdf.OpenRDFException;
 
 /**
+ * This is an abstract FOAF+SSL verifier.
+ * 
  * @author Bruno Harbulot.
  */
 public interface FoafSslVerifier {
-
     /**
+     * Verifies an X.509 certificate built for FOAF+SSL and returns a Collection
+     * of verified FoafSslPrincipals.
+     * 
      * @param clientCert
-     *            a x509 cerificate, hopefully with an foaf+ssl alternative name
+     *            an X.509 cerificate, expected to contain a FOAF+SSL Web ID in
+     *            the subject alternative name extension.
      * @return a collection of verified Principals.
      * @throws org.openrdf.OpenRDFException
      * @throws java.io.IOException

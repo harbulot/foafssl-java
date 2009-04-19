@@ -1,7 +1,7 @@
 /*
 New BSD license: http://opensource.org/licenses/bsd-license.php
 
-Copyright (c) 2008 Sun Microsystems, Inc.
+Copyright (c) 2008-2009 Sun Microsystems, Inc.
 901 San Antonio Road, Palo Alto, CA 94303 USA. 
 All rights reserved.
 
@@ -35,8 +35,10 @@ package net.java.dev.sommer.foafssl.verifier;
 import java.io.InputStream;
 import java.net.URLConnection;
 import java.security.PublicKey;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.io.IOException;
 import java.math.BigInteger;
@@ -69,6 +71,9 @@ import org.openrdf.rio.RDFFormat;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
+ * This class verifies FOAF+SSL certificates by dereferencing the FOAF file at
+ * the given Web ID URI.
+ * 
  * @author Henry Story.
  * @author Bruno Harbulot.
  */
@@ -76,6 +81,18 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
 
     static transient Logger log = Logger.getLogger(DereferencingFoafSslVerifier.class.getName());
 
+    /**
+     * Verifies an X.509 certificate built for FOAF+SSL and returns a Collection
+     * of verified FoafSslPrincipals. The verification is done by getting the
+     * FOAF file at the Web ID URI.
+     * 
+     * @param clientCert
+     *            an X.509 cerificate, expected to contain a FOAF+SSL Web ID in
+     *            the subject alternative name extension.
+     * @return a collection of verified Principals.
+     * @throws org.openrdf.OpenRDFException
+     * @throws java.io.IOException
+     */
     public Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
             X509Certificate clientCert) throws OpenRDFException, IOException {
         List<DereferencedFoafSslPrincipal> verifiedUris = new ArrayList<DereferencedFoafSslPrincipal>();
@@ -91,6 +108,19 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
         return verifiedUris;
     }
 
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     * 
+     * @param claimedIdUri
+     *            claimed Web ID.
+     * @param certPublicKey
+     *            public key provided in the X.509 certificate.
+     * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
+     *         case of success, null otherwise.
+     * @throws OpenRDFException
+     * @throws IOException
+     */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
             PublicKey certPublicKey) throws OpenRDFException, IOException {
         URL foafname = claimedIdUri.toURL();
@@ -115,6 +145,27 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
         }
     }
 
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     * 
+     * @param claimedIdUri
+     *            claimed Web ID.
+     * @param certPublicKey
+     *            public key provided in the X.509 certificate.
+     * @param actualUrl
+     *            Actual URL of the FOAF document (perhaps different to URI if
+     *            redirections).
+     * @param foafDocInputStream
+     *            FOAF document input stream.
+     * @param foafMediaType
+     *            Media type of the FOAF document representation in the input
+     *            stream.
+     * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
+     *         case of success, null otherwise.
+     * @throws OpenRDFException
+     * @throws IOException
+     */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
             PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
             String foafMediaType) throws OpenRDFException, IOException {
@@ -122,6 +173,32 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
                 foafMediaType, false, null);
     }
 
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     * 
+     * @param claimedIdUri
+     *            claimed Web ID.
+     * @param certPublicKey
+     *            public key provided in the X.509 certificate.
+     * @param actualUrl
+     *            Actual URL of the FOAF document (perhaps different to URI if
+     *            redirections).
+     * @param foafDocInputStream
+     *            FOAF document input stream.
+     * @param foafMediaType
+     *            Media type of the FOAF document representation in the input
+     *            stream.
+     * @param dereferencedSecurely
+     *            whether the FOAF document was dereferenced securely.
+     * @param foafServerCertificates
+     *            certificate chain of the server hosting the FOAF document, may
+     *            be null.
+     * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
+     *         case of success, null otherwise.
+     * @throws OpenRDFException
+     * @throws IOException
+     */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
             PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
             String foafMediaType, boolean dereferencedSecurely, Certificate[] foafServerCertificates)
@@ -192,11 +269,14 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     }
 
     /**
-     * we are interested in the alternative URI names in the certificates
-     * (perhaps others such as email addresses could also be useful)
+     * Extracts the URIs in the subject alternative name extension of an X.509
+     * certificate (perhaps others such as email addresses could also be
+     * useful).
      * 
      * @param cert
-     * @return a list of such URIs
+     *            X.509 certificate from which to extract the URIs.
+     * @return list of java.net.URIs built from the URIs in the subjectAltName
+     *         extension.
      */
     public static List<URI> getAlternativeURIName(X509Certificate cert) {
         ArrayList<URI> answers = new ArrayList<URI>();
@@ -206,7 +286,6 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             }
             Collection<List<?>> names = cert.getSubjectAlternativeNames();
             if (names == null) {
-                // beurk! this is part of the spec. it can return null
                 return answers;
             }
             for (Iterator<List<?>> it = names.iterator(); it.hasNext();) {
@@ -231,8 +310,10 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
                     }
                 }
             }
-        } catch (java.security.cert.CertificateParsingException e) {
-            e.printStackTrace(); // todo: decide what exception to throw
+        } catch (CertificateParsingException e) {
+            // TODO: decide what exception to throw
+            log.log(Level.WARNING,
+                    "Unable to parse certificate for extracting the subjectAltNames.", e);
         }
         return answers;
     }
