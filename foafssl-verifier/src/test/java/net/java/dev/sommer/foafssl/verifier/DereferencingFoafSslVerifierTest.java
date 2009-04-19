@@ -34,9 +34,16 @@ package net.java.dev.sommer.foafssl.verifier;
 
 import static org.junit.Assert.*;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLStreamHandler;
+import java.net.URLStreamHandlerFactory;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 
@@ -49,23 +56,80 @@ import org.junit.Test;
  * @author Bruno Harbulot.
  */
 public class DereferencingFoafSslVerifierTest {
-    public static final URI BRUNO_FOAF_URI = URI.create("http://www.harbulot.com/foaf/bruno#me");
-    public static final URI BRUNO_FOAF_DOC_URI = URI.create("http://www.harbulot.com/foaf/bruno");
+    public static final String TEST_GOOD_FOAF_FILENAME = "dummy-foaf.rdf.xml";
+    public static final String TEST_WRONG_FOAF_FILENAME = "dummy-foaf-wrong.rdf.xml";
+    public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";
 
-    public static final String TEST_BRUNO_FOAF_FILENAME = "bruno.rdf.xml";
-    public static final String TEST_BRUNO_WRONG_FOAF_FILENAME = "bruno-wrong.rdf.xml";
-    public static final String TEST_BRUNO_CERT_FILENAME = "bruno-foafssl.pem";
+    public static final String TEST_FOAF_LOCATION = "http://foaf.example.net/bruno";
+    public static final URI TEST_WEB_ID_URI = URI.create(TEST_FOAF_LOCATION + "#me");
+    public static final URL TEST_FOAF_URL;
+    static {
+        try {
+            TEST_FOAF_URL = new URL(TEST_FOAF_LOCATION);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     private DereferencingFoafSslVerifier verifier;
     private X509Certificate x509Certificate;
 
     @Before
     public void setUp() throws Exception {
-        Security.addProvider(new BouncyCastleProvider());
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
+
+        /*
+         * Creates a mock URLConnection not to make outside connections to
+         * de-reference the FOAF file for the tests.
+         */
+        URLStreamHandlerFactory mockStreamHandlerFactory = new URLStreamHandlerFactory() {
+            public URLStreamHandler createURLStreamHandler(String protocol) {
+                if ("http".equals(protocol) || "https".equals(protocol)) {
+                    return new URLStreamHandler() {
+                        @Override
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new HttpURLConnection(u) {
+                                @Override
+                                public void disconnect() {
+                                }
+
+                                @Override
+                                public boolean usingProxy() {
+                                    return false;
+                                }
+
+                                @Override
+                                public void connect() throws IOException {
+                                }
+
+                                @Override
+                                public String getContentType() {
+                                    return "application/rdf+xml";
+                                }
+
+                                @Override
+                                public InputStream getInputStream() throws IOException {
+                                    return DereferencingFoafSslVerifierTest.class
+                                            .getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
+                                }
+                            };
+                        }
+                    };
+                }
+                return null;
+            }
+        };
+        try {
+            URL.setURLStreamHandlerFactory(mockStreamHandlerFactory);
+        } catch (Throwable e) {
+        }
+
         this.verifier = new DereferencingFoafSslVerifier();
 
         InputStreamReader certReader = new InputStreamReader(DereferencingFoafSslVerifierTest.class
-                .getResourceAsStream(TEST_BRUNO_CERT_FILENAME));
+                .getResourceAsStream(TEST_CERT_FILENAME));
 
         PEMReader pemReader = new PEMReader(certReader);
         while (pemReader.ready()) {
@@ -84,12 +148,11 @@ public class DereferencingFoafSslVerifierTest {
     public void testGoodLocalFoafFile() throws Exception {
 
         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
-                .getResourceAsStream(TEST_BRUNO_FOAF_FILENAME);
+                .getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
 
         try {
-            assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
-                    .getPublicKey(), BRUNO_FOAF_DOC_URI.toURL(), foafInputStream,
-                    "application/rdf+xml"));
+            assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
         } finally {
             foafInputStream.close();
         }
@@ -98,11 +161,10 @@ public class DereferencingFoafSslVerifierTest {
     @Test
     public void testBadLocalFoafFile() throws Exception {
         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
-                .getResourceAsStream(TEST_BRUNO_WRONG_FOAF_FILENAME);
+                .getResourceAsStream(TEST_WRONG_FOAF_FILENAME);
         try {
-            assertNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
-                    .getPublicKey(), BRUNO_FOAF_DOC_URI.toURL(), foafInputStream,
-                    "application/rdf+xml"));
+            assertNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
         } finally {
             foafInputStream.close();
         }
@@ -110,7 +172,7 @@ public class DereferencingFoafSslVerifierTest {
 
     @Test
     public void testRemoteFoafFile() throws Exception {
-        assertNotNull(this.verifier.verifyByDereferencing(BRUNO_FOAF_URI, this.x509Certificate
+        assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
                 .getPublicKey()));
     }
 }

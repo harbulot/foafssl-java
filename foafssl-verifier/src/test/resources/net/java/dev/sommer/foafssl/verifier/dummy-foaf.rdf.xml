@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<rdf:RDF xmlns:cert="http://www.w3.org/ns/auth/cert#"
+	xmlns:foaf="http://xmlns.com/foaf/0.1/" xmlns:rsa="http://www.w3.org/ns/auth/rsa#"
+	xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+	<rsa:RSAPublicKey>
+		<rsa:public_exponent cert:decimal="65537" />
+		<rsa:modulus
+			cert:hex="a4615390921b3d28b05b409280dbe6f34283a9fed892b670e111aadd6c951f58b101bf1c1fd7b5bb5493a9fa269ff1e3814747a24098c3e0b29b6d5a21eec655e1a60873803a2b7e9a158f25239c04608b0a32ed9c26ce6c1c2741426204b4351d02633d5c9a6bf7e387cd514d93445b37b4bb3ed85a114739c82e5e769ec277" />
+		<cert:identity>
+			<foaf:Person rdf:about="http://foaf.example.net/bruno#me" />
+		</cert:identity>
+	</rsa:RSAPublicKey>
+</rdf:RDF>
