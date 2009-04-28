@@ -14,7 +14,6 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import net.java.dev.sommer.foafssl.verifier.*;
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
-import org.openrdf.OpenRDFException;
 
 /**
  * Hello world!
@@ -40,7 +39,7 @@ public class FoafSSLFilter implements Filter {
                 resp.getOutputStream().write("No foaf+ssl certificates".getBytes());
                 return;
             }
-        } catch (OpenRDFException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(FoafSSLFilter.class.getName()).log(Level.SEVERE, null, ex);
             resp.getOutputStream().write("cought error doing verification:".getBytes());
             ex.printStackTrace(new PrintStream(resp.getOutputStream()));

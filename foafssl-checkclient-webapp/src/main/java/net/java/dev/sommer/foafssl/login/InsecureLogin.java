@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 import net.java.dev.sommer.foafssl.verifier.DereferencingFoafSslVerifier;
-import org.openrdf.OpenRDFException;
 
 /**
  * A very simple Insecure Login Servlet for sites that want to play with
@@ -87,7 +86,7 @@ public class InsecureLogin extends HttpServlet {
                                 + webid);
                     }
                 }
-            } catch (OpenRDFException ex) {
+            } catch (Exception ex) {
                 log.log(Level.INFO, "exception trying to login client", ex);
             }
         }
