@@ -5,7 +5,7 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.3.1-SNAPSHOT</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
 
@@ -22,10 +22,20 @@
 			<name>Aduna Repository</name>
 			<url>http://repo.aduna-software.org/maven2/releases</url>
 		</repository>
+		<repository>
+			<id>maven-restlet</id>
+			<name>Public online Restlet repository</name>
+			<url>http://maven.restlet.org</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<modules>
-		<module>foafssl-principals</module>
 		<module>foafssl-verifier</module>
 		<module>foafssl-checkclient-webapp</module>
 		<module>foafssl-filter</module>
@@ -35,23 +45,18 @@
 		<dependencies>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
-				<artifactId>foafssl-principals</artifactId>
-				<version>0.4-SNAPSHOT</version>
-			</dependency>
-			<dependency>
-				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-verifier</artifactId>
-				<version>0.4-SNAPSHOT</version>
+				<version>0.3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-checkclient-webapp</artifactId>
-				<version>0.4-SNAPSHOT</version>
+				<version>0.3.1-SNAPSHOT</version>
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-filter</artifactId>
-				<version>0.4-SNAPSHOT</version>
+				<version>0.3.1-SNAPSHOT</version>
 			</dependency>
 
 			<dependency>
