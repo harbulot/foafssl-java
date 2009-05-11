@@ -3,7 +3,22 @@
    <display-name>Test for FOAF+SSL</display-name>
     <servlet>
         <servlet-name>simple login</servlet-name>
-        <servlet-class>simpleLogin</servlet-class>
+        <servlet-class>net.java.dev.sommer.foafssl.login.IdpServlet</servlet-class>
+        <init-param>
+            <description>The path to the keystore</description>
+            <param-name>keystorePath</param-name>
+            <param-value>/home/gfish/apache-tomcat-6.0.18/conf/foafssl.kdb</param-value>
+        </init-param>
+        <init-param>
+            <description>the password of the keystore</description>
+            <param-name>keystorePassword</param-name>
+            <param-value>password</param-value>
+        </init-param>
+        <init-param>
+            <description>The alias of the key in the keystore to use</description>
+            <param-name>keyAlias</param-name>
+            <param-value>foafssl</param-value>
+        </init-param>
         </servlet>
     <servlet>
         <servlet-name>InsecureLoginService</servlet-name>
@@ -11,7 +26,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>simple login</servlet-name>
-        <url-pattern>/simpleLogin</url-pattern>
+        <url-pattern>/idp</url-pattern>
     </servlet-mapping>
     <servlet-mapping>
         <servlet-name>InsecureLoginService</servlet-name>
