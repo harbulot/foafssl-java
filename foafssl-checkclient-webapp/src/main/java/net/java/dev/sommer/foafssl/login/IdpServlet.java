@@ -46,6 +46,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
@@ -65,6 +66,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Base64;
 
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
@@ -98,6 +100,7 @@ public class IdpServlet extends HttpServlet {
 
     private PrivateKey privateKey = null;
     private PublicKey publicKey = null;
+    private Certificate certificate = null;
 
     /**
      * Initialises the servlet: loads the keystore/keys to use to sign the
@@ -182,15 +185,18 @@ public class IdpServlet extends HttpServlet {
                 }
             }
             if (alias == null) {
-                LOG.log(Level.SEVERE,
+                LOG
+                        .log(
+                                Level.SEVERE,
                                 "Error configuring servlet, invalid keystore configuration: alias unspecified or couldn't find key at alias: "
                                         + alias);
                 throw new ServletException(
                         "Invalid keystore configuration: alias unspecified or couldn't find key at alias: "
                                 + alias);
             }
-            privateKey = (PrivateKey) keyStore.getKey(alias,
-                    keyPassword != null ? keyPassword.toCharArray() : null);
+            privateKey = (PrivateKey) keyStore.getKey(alias, keyPassword != null ? keyPassword
+                    .toCharArray() : null);
+            certificate = keyStore.getCertificate(alias);
             publicKey = keyStore.getCertificate(alias).getPublicKey();
         } catch (UnrecoverableKeyException e) {
             LOG.log(Level.SEVERE, "Error configuring servlet (could not load keystore).", e);
@@ -227,7 +233,7 @@ public class IdpServlet extends HttpServlet {
 
         if ((verifiedWebIDs != null) && (verifiedWebIDs.size() > 0)) {
             String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
-            //todo: should one test that replyTo is a URL?
+            // TODO: should one test that replyTo is a URL?
 
             try {
                 if ((replyTo != null) && (replyTo.length() > 0)) {
@@ -253,12 +259,17 @@ public class IdpServlet extends HttpServlet {
     }
 
     /**
-     *
-     *
-     * @param verifiedWebIDs a list of webIds identifying the user (only the fist will be used)
-     * @param simpleRequestParam the service that the response is sent to
-     * @param privKey the private key used by this service
-     * @return the URL of the response with the webid, timestamp appended and signed
+     * 
+     * 
+     * @param verifiedWebIDs
+     *            a list of webIds identifying the user (only the fist will be
+     *            used)
+     * @param simpleRequestParam
+     *            the service that the response is sent to
+     * @param privKey
+     *            the private key used by this service
+     * @return the URL of the response with the webid, timestamp appended and
+     *         signed
      * @throws NoSuchAlgorithmException
      * @throws UnsupportedEncodingException
      * @throws InvalidKeyException
@@ -273,13 +284,13 @@ public class IdpServlet extends HttpServlet {
         String authnResp = simpleRequestParam;
 
         String sigAlg = null;
-//        String sigAlgUri = null;
+        String sigAlgUri = null;
         if ("RSA".equals(privateKey.getAlgorithm())) {
             sigAlg = "SHA1withRSA";
-//            sigAlgUri = "rsa-sha1";
+            sigAlgUri = "rsa-sha1";
         } else if ("DSA".equals(privateKey.getAlgorithm())) {
             sigAlg = "SHA1withDSA";
-//            sigAlgUri = "dsa-sha1";
+            sigAlgUri = "dsa-sha1";
         } else {
             throw new NoSuchAlgorithmException("Unsupported key algorithm type.");
         }
@@ -290,9 +301,7 @@ public class IdpServlet extends HttpServlet {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
         authnResp += "&" + TIMESTAMP_PARAMNAME + "="
                 + URLEncoder.encode(dateFormat.format(Calendar.getInstance().getTime()), "UTF-8");
-//  we are not passing information on the public key via the url, so since the information in the url is incomplete, there is no need to
-//  pass the algorithm information either
-//        authnResp += "&" + SIGALG_PARAMNAME + "=" + URLEncoder.encode(sigAlgUri, "UTF-8");
+        authnResp += "&" + SIGALG_PARAMNAME + "=" + URLEncoder.encode(sigAlgUri, "UTF-8");
 
         String signedMessage = authnResp;
         Signature signature = Signature.getInstance(sigAlg);
@@ -304,67 +313,86 @@ public class IdpServlet extends HttpServlet {
         return authnResp;
     }
 
-   /** 
-    * Web page to explain the usage of this servlet. 
-    * Please improove, by externalising the html. 
-    */
-   private void usage(HttpServletResponse response, Collection<? extends FoafSslPrincipal> verifiedWebIDs) throws IOException {
-      StringBuffer res = new StringBuffer();
-      res.append("<html><head><title>foaf+ssl identity servlet</title></head><body>")
-              .append("<h1>foaf+ssl identity provider servlet</h1>")
-              .append("<p>This is a very basic Identity Provider for <a href='http://esw.w3.org/topic/foaf+ssl'>foaf+ssl</a>.")
-            .append(" It identifies a user connecting using ssl to this service, and returns ")
-            .append("the <a href='http://esw.w3.org/topic/WebID'>WebId</a> of the user to the service in a secure manner.")
-            .append("The user that just connected right now for example has ");
-      if (verifiedWebIDs.size() == 0) {
-         res.append(" no verified webIds.");
-      } else {
-         res.append(" the following WebIds:<ul>");
-         for (FoafSslPrincipal ids: verifiedWebIDs) {
-            res.append("<li><a href='").append(ids.getUri()).append("'>")
-                    .append(ids.getUri()).append("</a></li>");
-         }
-         res.append("</ul>");
-      }
-      res.append("</p>")
-              .append("<h3>How does it work?</h3>")
-              .append("<p>This service just sends a redirect to the service given by the '")
-              .append(AUTHREQISSUER_PARAMNAME)
-              .append("' parameter. ")
-              .append(" The redirected to URL is constructed on the following pattern:")
-              .append("<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?")
-              .append(WEBID_PARAMNAME).append("=$webid&amp;")
-              .append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
-              .append(SIGALG_PARAMNAME).append("=$URLSignature")
-              .append("</pre>");
-      res.append("Where the above variables have the following meanings:")
-              .append("<ul><li><code>$").append(AUTHREQISSUER_PARAMNAME)
-              .append("</code>: is the URL passed by the server in the initial request</li>")
-              .append("<li><code>$webid</code> is the webid of the user connecting")
-              .append("<li><code>$timeStamp</code> is a time stamp in XML Schema format (same as used by Atom).")
-              .append(" This is needed to reduce the ease of developing replay attacks.")
-              .append("<li><code>$URLSignature</code> is the signature of the whole url in bold above")
-              .append("</ul>");
-      res.append("The public key used by this service that verifies the signature is:");
-      if ("RSA".equals(privateKey.getAlgorithm())) {
-           RSAPublicKey certRsakey = (RSAPublicKey)publicKey;
-         res.append("<ul><li>Key Type: RSA</li>")
-                 .append("<li>public exponent: ").append(certRsakey.getPublicExponent())
-                 .append("</li>");
-         res.append("<li>modulus: ").append(certRsakey.getModulus())
-                 .append("</li></ul>");
-         res.append("The signature uses the SHA1withRSA algorithm.");
-      } else {
-         //todo for other
-      }
+    /**
+     * Web page to explain the usage of this servlet. Please improove, by
+     * externalising the html.
+     */
+    private void usage(HttpServletResponse response,
+            Collection<? extends FoafSslPrincipal> verifiedWebIDs) throws IOException {
+        StringBuffer res = new StringBuffer();
+        res
+                .append("<html><head><title>FOAF+SSL identity servlet</title></head><body>")
+                .append("<h1>FOAF+SSL identity provider servlet</h1>")
+                .append(
+                        "<p>This is a very basic Identity Provider for <a href='http://esw.w3.org/topic/foaf+ssl'>FOAF+SSL</a>.")
+                .append(" It identifies a user connecting using SSL to this service, and returns ")
+                .append(
+                        "the <a href='http://esw.w3.org/topic/WebID'>WebID</a> of the user to the service in a secure manner.")
+                .append("The user that just connected right now for example has ");
+        if (verifiedWebIDs.size() == 0) {
+            res.append(" no verified webIDs.");
+        } else {
+            res.append(" the following WebIDs:<ul>");
+            for (FoafSslPrincipal ids : verifiedWebIDs) {
+                res.append("<li><a href='").append(ids.getUri()).append("'>").append(ids.getUri())
+                        .append("</a></li>");
+            }
+            res.append("</ul>");
+        }
+        res.append("</p>").append("<h3>How does it work?</h3>").append(
+                "<p>This service just sends a redirect to the service given by the '").append(
+                AUTHREQISSUER_PARAMNAME).append("' parameter. ").append(
+                " The redirected to URL is constructed on the following pattern:").append(
+                "<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
+                .append("=$webid&amp;").append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
+                .append(SIGALG_PARAMNAME).append("=$URLSignature").append("</pre>");
+        res
+                .append("Where the above variables have the following meanings:")
+                .append("<ul><li><code>$")
+                .append(AUTHREQISSUER_PARAMNAME)
+                .append("</code> is the URL passed by the server in the initial request.</li>")
+                .append("<li><code>$webid</code> is the webid of the user connecting.")
+                .append(
+                        "<li><code>$timeStamp</code> is a time stamp in XML Schema format (same as used by Atom).")
+                .append(" This is needed to reduce the ease of developing replay attacks.")
+                .append(
+                        "<li><code>$URLSignature</code> is the signature of the whole url in bold above.")
+                .append("</ul>");
+        res.append("The public key used by this service that verifies the signature is:");
+        if ("RSA".equals(privateKey.getAlgorithm())) {
+            RSAPublicKey certRsakey = (RSAPublicKey) publicKey;
+            res.append("<ul><li>Key Type: RSA</li>").append("<li>public exponent: ").append(
+                    certRsakey.getPublicExponent()).append("</li>");
+            res.append("<li>modulus: ").append(certRsakey.getModulus()).append("</li></ul>");
+            // res.append("The signature uses the SHA1withRSA algorithm.");
+        } else {
+            // TODO for other
+        }
+        res.append("For ease of use, depending on which tool you use, here it is in a PEM format:");
+        res.append("<ul><li>Public key:<pre>");
+        response.getWriter().print(res);
+        
+        PEMWriter pemWriter = new PEMWriter(response.getWriter());
+        pemWriter.writeObject(publicKey);
+        pemWriter.flush();
+        
+        res = new StringBuffer();
+        res.append("</pre></li>");
+        res.append("<li>Certificate with this public key:<pre>");
+        response.getWriter().print(res);
+        
+        pemWriter.writeObject(certificate);
+        pemWriter.flush();
 
-      res.append("<h3>Try it out from here</h3>");
-      res.append("<form action='' method='get'>")
-              .append("Requesting service URL: <input type='text' size='80' name='").append(AUTHREQISSUER_PARAMNAME).append("'></input>")
-              .append("<input type='submit' value='test this'>")
-              .append("</form>");
+        res = new StringBuffer();
+        res.append("</pre></li></ul>");
+        res.append("<h3>Try it out from here</h3>");
+        res.append("<form action='' method='get'>").append(
+                "Requesting service URL: <input type='text' size='80' name='").append(
+                AUTHREQISSUER_PARAMNAME).append("'></input>").append(
+                "<input type='submit' value='test this'>").append("</form>");
 
-      res.append("</p></body></html>");
-      response.getWriter().print(res);
-   }
+        res.append("</p></body></html>");
+        response.getWriter().print(res);
+    }
 }
