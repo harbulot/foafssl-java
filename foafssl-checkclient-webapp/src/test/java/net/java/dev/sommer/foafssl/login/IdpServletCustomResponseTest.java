@@ -43,6 +43,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.security.KeyStore;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
@@ -287,10 +288,17 @@ public class IdpServletCustomResponseTest {
 
         byte[] signatureBytes = Base64.decode(signatureParam.getValue());
         String sigAlg = null;
-        if ("dsa-sha1".equals(sigAlgParam)) {
+        // if ("dsa-sha1".equals(sigAlgParam)) {
+        // sigAlg = "SHA1withDSA";
+        // } else if ("rsa-sha1".equals(sigAlgParam)) {
+        // sigAlg = "SHA1withRSA";
+        // } else {
+        // fail("Unsupported signature algorithm.");
+        // }
+        if ("RSA".equals(getPublicKey().getAlgorithm())) {
+            sigAlg = "SHA1withRSA";
+        } else if ("DSA".equals(getPublicKey().getAlgorithm())) {
             sigAlg = "SHA1withDSA";
-        } else if ("rsa-sha1".equals(sigAlgParam)) {
-           sigAlg = "SHA1withRSA";
         } else {
             fail("Unsupported signature algorithm.");
         }

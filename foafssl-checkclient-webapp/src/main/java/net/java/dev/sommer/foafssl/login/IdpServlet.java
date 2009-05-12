@@ -284,13 +284,12 @@ public class IdpServlet extends HttpServlet {
         String authnResp = simpleRequestParam;
 
         String sigAlg = null;
-        String sigAlgUri = null;
         if ("RSA".equals(privateKey.getAlgorithm())) {
             sigAlg = "SHA1withRSA";
-            sigAlgUri = "rsa-sha1";
+            // sigAlgUri = "rsa-sha1";
         } else if ("DSA".equals(privateKey.getAlgorithm())) {
             sigAlg = "SHA1withDSA";
-            sigAlgUri = "dsa-sha1";
+            // sigAlgUri = "dsa-sha1";
         } else {
             throw new NoSuchAlgorithmException("Unsupported key algorithm type.");
         }
@@ -301,7 +300,8 @@ public class IdpServlet extends HttpServlet {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");
         authnResp += "&" + TIMESTAMP_PARAMNAME + "="
                 + URLEncoder.encode(dateFormat.format(Calendar.getInstance().getTime()), "UTF-8");
-        authnResp += "&" + SIGALG_PARAMNAME + "=" + URLEncoder.encode(sigAlgUri, "UTF-8");
+        // authnResp += "&" + SIGALG_PARAMNAME + "=" +
+        // URLEncoder.encode(sigAlgUri, "UTF-8");
 
         String signedMessage = authnResp;
         Signature signature = Signature.getInstance(sigAlg);
@@ -345,7 +345,7 @@ public class IdpServlet extends HttpServlet {
                 " The redirected to URL is constructed on the following pattern:").append(
                 "<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
                 .append("=$webid&amp;").append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
-                .append(SIGALG_PARAMNAME).append("=$URLSignature").append("</pre>");
+                .append(SIGNATURE_PARAMNAME).append("=$URLSignature").append("</pre>");
         res
                 .append("Where the above variables have the following meanings:")
                 .append("<ul><li><code>$")
@@ -358,8 +358,9 @@ public class IdpServlet extends HttpServlet {
                 .append(
                         "<li><code>$URLSignature</code> is the signature of the whole url in bold above.")
                 .append("</ul>");
-        res.append("The public key used by this service that verifies the signature is:");
         if ("RSA".equals(privateKey.getAlgorithm())) {
+            res.append("The signature uses the RSA with SHA-1 algorithm.");
+            res.append("The public key used by this service that verifies the signature is:");
             RSAPublicKey certRsakey = (RSAPublicKey) publicKey;
             res.append("<ul><li>Key Type: RSA</li>").append("<li>public exponent: ").append(
                     certRsakey.getPublicExponent()).append("</li>");
@@ -368,19 +369,20 @@ public class IdpServlet extends HttpServlet {
         } else {
             // TODO for other
         }
-        res.append("For ease of use, depending on which tool you use, here it is in a PEM format:");
+        res
+                .append("For ease of use, depending on which tool you use, here is the public key in a PEM format:");
         res.append("<ul><li>Public key:<pre>");
         response.getWriter().print(res);
-        
+
         PEMWriter pemWriter = new PEMWriter(response.getWriter());
         pemWriter.writeObject(publicKey);
         pemWriter.flush();
-        
+
         res = new StringBuffer();
         res.append("</pre></li>");
         res.append("<li>Certificate with this public key:<pre>");
         response.getWriter().print(res);
-        
+
         pemWriter.writeObject(certificate);
         pemWriter.flush();
 
