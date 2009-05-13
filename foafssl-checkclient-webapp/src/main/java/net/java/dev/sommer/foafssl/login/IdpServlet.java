@@ -86,6 +86,7 @@ public class IdpServlet extends HttpServlet {
     public static final String SIGALG_PARAMNAME = "sigalg";
     public static final String TIMESTAMP_PARAMNAME = "ts";
     public static final String WEBID_PARAMNAME = "webid";
+    public static final String ERROR_PARAMNAME = "error";
     public static final String AUTHREQISSUER_PARAMNAME = "authreqissuer";
 
     public final static String KEYSTORE_JNDI_INITPARAM = "keystore";
@@ -197,7 +198,7 @@ public class IdpServlet extends HttpServlet {
             privateKey = (PrivateKey) keyStore.getKey(alias, keyPassword != null ? keyPassword
                     .toCharArray() : null);
             certificate = keyStore.getCertificate(alias);
-            publicKey = keyStore.getCertificate(alias).getPublicKey();
+            publicKey = certificate.getPublicKey();
         } catch (UnrecoverableKeyException e) {
             LOG.log(Level.SEVERE, "Error configuring servlet (could not load keystore).", e);
             throw new ServletException("Could not load keystore.");
@@ -215,6 +216,9 @@ public class IdpServlet extends HttpServlet {
             throws ServletException, IOException {
         Collection<? extends FoafSslPrincipal> verifiedWebIDs = null;
 
+        // TODO: should one test that replyTo is a URL?
+        String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
+
         /*
          * Verifies the certificate passed in the request.
          */
@@ -225,37 +229,36 @@ public class IdpServlet extends HttpServlet {
             try {
                 verifiedWebIDs = FOAF_SSL_VERIFIER.verifyFoafSslCertificate(foafSslCertificate);
             } catch (Exception e) {
-                LOG.log(Level.WARNING, "Exception when verifying the certificate.", e);
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                return;
+               if (replyTo == null || "".equals(replyTo)) {
+                  usage(response, null);
+               } else {
+                   redirect(response,replyTo+"?"+ERROR_PARAMNAME+"="+URLEncoder.encode(e.getMessage()));
+               }
+               return;
             }
         }
 
         if ((verifiedWebIDs != null) && (verifiedWebIDs.size() > 0)) {
-            String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
-            // TODO: should one test that replyTo is a URL?
-
             try {
                 if ((replyTo != null) && (replyTo.length() > 0)) {
                     String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
-                    response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
-                    response.setHeader("Location", authnResp);
+                    redirect(response, authnResp);
                 } else {
                     usage(response, verifiedWebIDs);
                 }
             } catch (InvalidKeyException e) {
                 LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                redirect(response, replyTo+"?"+ERROR_PARAMNAME+"=IdPError");
             } catch (NoSuchAlgorithmException e) {
                 LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                redirect(response, replyTo+"?"+ERROR_PARAMNAME+"=IdPError");
             } catch (SignatureException e) {
                 LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                redirect(response, replyTo+"?"+ERROR_PARAMNAME+"=IdPError");
             }
         } else {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-        }
+                redirect(response,noCertError(replyTo));
+       }
     }
 
     /**
@@ -313,6 +316,26 @@ public class IdpServlet extends HttpServlet {
         return authnResp;
     }
 
+   /**     
+    * Redirect request to the given url
+    * @param the response
+    * @param respUrl the response Url to redirect to
+    */
+   private void redirect(HttpServletResponse response, String respUrl) {
+      response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);
+      response.setHeader("Location", respUrl);
+   }
+
+   /**
+    * create a URL to which the service will be redirected
+    * @param replyTo
+    * @return a url to redirect to
+    */
+   private String noCertError(String replyTo) {
+      return replyTo+"?"+ERROR_PARAMNAME+"=nocert";
+   }
+
+
     /**
      * Web page to explain the usage of this servlet. Please improove, by
      * externalising the html.
@@ -329,8 +352,9 @@ public class IdpServlet extends HttpServlet {
                 .append(
                         "the <a href='http://esw.w3.org/topic/WebID'>WebID</a> of the user to the service in a secure manner.")
                 .append("The user that just connected right now for example has ");
-        if (verifiedWebIDs.size() == 0) {
-            res.append(" no verified webIDs.");
+        if (verifiedWebIDs==null || verifiedWebIDs.size() == 0) {
+            res.append(" no verified webIDs. To try out this service create yourself a certificate using ")
+                    .append(" <a href='http://test.foafssl.org/cert/'>this service</a>.");
         } else {
             res.append(" the following WebIDs:<ul>");
             for (FoafSslPrincipal ids : verifiedWebIDs) {
@@ -346,8 +370,7 @@ public class IdpServlet extends HttpServlet {
                 "<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
                 .append("=$webid&amp;").append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
                 .append(SIGNATURE_PARAMNAME).append("=$URLSignature").append("</pre>");
-        res
-                .append("Where the above variables have the following meanings:")
+        res.append("Where the above variables have the following meanings:")
                 .append("<ul><li><code>$")
                 .append(AUTHREQISSUER_PARAMNAME)
                 .append("</code> is the URL passed by the server in the initial request.</li>")
@@ -358,6 +381,16 @@ public class IdpServlet extends HttpServlet {
                 .append(
                         "<li><code>$URLSignature</code> is the signature of the whole url in bold above.")
                 .append("</ul>");
+        res.append("</p><p>In case of error the service gets redirected to ")
+                .append("<pre>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(ERROR_PARAMNAME).append("=$code")
+                .append("</pre>")
+                .append("Where $code can be either one of ")
+                .append("<ul><li><code>nocert</code>: when the client has no cert. This allows the SP to propose the client")
+                .append(" other authentication mechanisms.")
+                .append("<li><code>IdPError</code>: for some error in the IdP setup. Warn the IdP administrator!")
+                .append("<li>other messages, not standardised yet")
+                .append("</ul>")
+                .append("</p>");
         if ("RSA".equals(privateKey.getAlgorithm())) {
             res.append("The signature uses the RSA with SHA-1 algorithm.");
             res.append("The public key used by this service that verifies the signature is:");
@@ -397,4 +430,6 @@ public class IdpServlet extends HttpServlet {
         res.append("</p></body></html>");
         response.getWriter().print(res);
     }
+
+ 
 }
