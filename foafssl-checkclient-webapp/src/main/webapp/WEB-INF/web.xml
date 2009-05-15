@@ -7,17 +7,12 @@
         <init-param>
             <description>The path to the keystore</description>
             <param-name>keystorePath</param-name>
-            <param-value>/home/gfish/apache-tomcat-6.0.18/conf/foafssl.kdb</param-value>
+            <param-value>/Users/hjs/Programming/Tomcat/trunk/output/build/conf/keystore.jks</param-value>
         </init-param>
         <init-param>
             <description>the password of the keystore</description>
             <param-name>keystorePassword</param-name>
-            <param-value>password</param-value>
-        </init-param>
-        <init-param>
-            <description>The alias of the key in the keystore to use</description>
-            <param-name>keyAlias</param-name>
-            <param-value>foafssl</param-value>
+            <param-value>changeit</param-value>
         </init-param>
         </servlet>
     <servlet>

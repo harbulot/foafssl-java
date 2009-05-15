@@ -66,6 +66,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.tomcat.util.net.SSLSessionManager;
 import org.bouncycastle.openssl.PEMWriter;
 import org.bouncycastle.util.encoders.Base64;
 
@@ -88,6 +89,7 @@ public class IdpServlet extends HttpServlet {
     public static final String WEBID_PARAMNAME = "webid";
     public static final String ERROR_PARAMNAME = "error";
     public static final String AUTHREQISSUER_PARAMNAME = "authreqissuer";
+    public static final String LOGOUT_PARAMNAME = "logout";
 
     public final static String KEYSTORE_JNDI_INITPARAM = "keystore";
     public final static String DEFAULT_KEYSTORE_JNDI_INITPARAM = "keystore/signingKeyStore";
@@ -186,9 +188,7 @@ public class IdpServlet extends HttpServlet {
                 }
             }
             if (alias == null) {
-                LOG
-                        .log(
-                                Level.SEVERE,
+                LOG.log(Level.SEVERE,
                                 "Error configuring servlet, invalid keystore configuration: alias unspecified or couldn't find key at alias: "
                                         + alias);
                 throw new ServletException(
@@ -216,36 +216,58 @@ public class IdpServlet extends HttpServlet {
             throws ServletException, IOException {
         Collection<? extends FoafSslPrincipal> verifiedWebIDs = null;
 
+        boolean logout=false;
+        if ("now".equals(request.getParameter(LOGOUT_PARAMNAME))) {
+           SSLSessionManager s =(SSLSessionManager) request.getAttribute("javax.servlet.request.ssl_session_mgr");
+           if (s != null) {
+//           should I also invalidate http sessions here?
+//           HttpSession sess = request.getSession(false);
+//           if (sess!=null) sess.invalidate();
+              s.invalidateSession();
+              logout = true;
+           } else {
+              LOG.log(Level.SEVERE,"No org.apache.tomcat.util.SSLSessionManager!");
+           }
+           response.setHeader("Connection", "close");
+        }
+
         // TODO: should one test that replyTo is a URL?
         String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
+        if (replyTo == null || "".equals(replyTo)) {
+               usage(response, null);
+               return;
+        } else if (logout) {
+           redirect(response,replyTo);
+           return;
+        }
 
         /*
          * Verifies the certificate passed in the request.
          */
         X509Certificate[] certificates = (X509Certificate[]) request
                 .getAttribute("javax.servlet.request.X509Certificate");
+
+        if (certificates == null) {
+           if ( brokenBrowser(request)) {
+              //this works on a patched tomcat server to force fetch the certificate
+               certificates = (X509Certificate[]) request.getAttribute("javax.servlet.request.ForceX509Certificate");
+           }
+        }
+
         if (certificates != null) {
             X509Certificate foafSslCertificate = certificates[0];
             try {
                 verifiedWebIDs = FOAF_SSL_VERIFIER.verifyFoafSslCertificate(foafSslCertificate);
             } catch (Exception e) {
-               if (replyTo == null || "".equals(replyTo)) {
-                  usage(response, null);
-               } else {
-                   redirect(response,replyTo+"?"+ERROR_PARAMNAME+"="+URLEncoder.encode(e.getMessage()));
-               }
-               return;
+                redirect(response,replyTo+"?"+ERROR_PARAMNAME+"="+URLEncoder.encode(e.getMessage()));
+                return;
             }
         }
 
         if ((verifiedWebIDs != null) && (verifiedWebIDs.size() > 0)) {
             try {
-                if ((replyTo != null) && (replyTo.length() > 0)) {
                     String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
                     redirect(response, authnResp);
-                } else {
-                    usage(response, verifiedWebIDs);
-                }
             } catch (InvalidKeyException e) {
                 LOG.log(Level.SEVERE, "Error when signing the response.", e);
                 redirect(response, replyTo+"?"+ERROR_PARAMNAME+"=IdPError");
@@ -343,18 +365,15 @@ public class IdpServlet extends HttpServlet {
     private void usage(HttpServletResponse response,
             Collection<? extends FoafSslPrincipal> verifiedWebIDs) throws IOException {
         StringBuffer res = new StringBuffer();
-        res
-                .append("<html><head><title>FOAF+SSL identity servlet</title></head><body>")
+        res.append("<html><head><title>FOAF+SSL identity servlet</title></head><body>")
                 .append("<h1>FOAF+SSL identity provider servlet</h1>")
-                .append(
-                        "<p>This is a very basic Identity Provider for <a href='http://esw.w3.org/topic/foaf+ssl'>FOAF+SSL</a>.")
-                .append(" It identifies a user connecting using SSL to this service, and returns ")
-                .append(
-                        "the <a href='http://esw.w3.org/topic/WebID'>WebID</a> of the user to the service in a secure manner.")
+                .append("<p>This is a very basic Identity Provider for <a href='http://esw.w3.org/topic/foaf+ssl'>FOAF+SSL</a>.")
+                .append("It identifies a user connecting using SSL to this service, and returns ")
+                .append("the <a href='http://esw.w3.org/topic/WebID'>WebID</a> of the user to the service in a secure manner.")
                 .append("The user that just connected right now for example has ");
         if (verifiedWebIDs==null || verifiedWebIDs.size() == 0) {
             res.append(" no verified webIDs. To try out this service create yourself a certificate using ")
-                    .append(" <a href='http://test.foafssl.org/cert/'>this service</a>.");
+               .append(" <a href='http://test.foafssl.org/cert/'>this service</a>.");
         } else {
             res.append(" the following WebIDs:<ul>");
             for (FoafSslPrincipal ids : verifiedWebIDs) {
@@ -363,11 +382,19 @@ public class IdpServlet extends HttpServlet {
             }
             res.append("</ul>");
         }
-        res.append("</p>").append("<h3>How does it work?</h3>").append(
-                "<p>This service just sends a redirect to the service given by the '").append(
-                AUTHREQISSUER_PARAMNAME).append("' parameter. ").append(
-                " The redirected to URL is constructed on the following pattern:").append(
-                "<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
+        res.append("</p>")
+                .append("<h3>Getting the WebId</h3>")
+                .append("<h4>Getting an identifier</h4>")
+                .append("<p>To request identifiacation, use the following form:")
+                .append("<form action='' method='get'>")
+                .append("Requesting service URL: <input type='text' size='80' name='")
+                .append(AUTHREQISSUER_PARAMNAME).append("'></input>")
+                .append("<input type='submit' value='Get WebId'>")
+                .append("</form>")
+                .append("<p>This service just sends a redirect to the service given by the '")
+                .append(AUTHREQISSUER_PARAMNAME).append("' parameter, the value is the url entered in the above form.</p> ")
+                .append("<p>The redirected to URL is constructed on the following pattern:")
+                .append("<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
                 .append("=$webid&amp;").append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
                 .append(SIGNATURE_PARAMNAME).append("=$URLSignature").append("</pre>");
         res.append("Where the above variables have the following meanings:")
@@ -375,13 +402,12 @@ public class IdpServlet extends HttpServlet {
                 .append(AUTHREQISSUER_PARAMNAME)
                 .append("</code> is the URL passed by the server in the initial request.</li>")
                 .append("<li><code>$webid</code> is the webid of the user connecting.")
-                .append(
-                        "<li><code>$timeStamp</code> is a time stamp in XML Schema format (same as used by Atom).")
+                .append("<li><code>$timeStamp</code> is a time stamp in XML Schema format (same as used by Atom).")
                 .append(" This is needed to reduce the ease of developing replay attacks.")
-                .append(
-                        "<li><code>$URLSignature</code> is the signature of the whole url in bold above.")
+                .append("<li><code>$URLSignature</code> is the signature of the whole url in bold above.")
                 .append("</ul>");
-        res.append("</p><p>In case of error the service gets redirected to ")
+        res.append("</p><h4>Error responses</h4>")
+                .append("<p>In case of error the service gets redirected to ")
                 .append("<pre>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(ERROR_PARAMNAME).append("=$code")
                 .append("</pre>")
                 .append("Where $code can be either one of ")
@@ -391,9 +417,28 @@ public class IdpServlet extends HttpServlet {
                 .append("<li>other messages, not standardised yet")
                 .append("</ul>")
                 .append("</p>");
+        res.append("<h3>To Logout</h3>")
+                .append("<p>A user may wish to logout from a service provider, if only in order to assume a different persona.")
+                .append(" If the SSL session with this server is not closed, then any attempt to relogin")
+                .append(" using this will immediately return the exact same identity (at least for the validity period of the ")
+                .append(" ssl session.</p>")
+                .append(" <p>To logout use the following form:")
+                .append("<form action='' method='get'>")
+                .append("Requesting Service URL: <input type='text' size='80' name='")
+                .append(AUTHREQISSUER_PARAMNAME).append("'></input>")
+                .append("<input type='hidden' name='").append(LOGOUT_PARAMNAME).append("' value='now'/>\n")
+                .append("<input type='submit' value='logout from here'>")
+                .append("</form></p>")
+                .append("<p>The url generated will be something like the following:")
+                .append("<pre>...?").append(LOGOUT_PARAMNAME).append("=now&amp;").append(AUTHREQISSUER_PARAMNAME).append("=http://...</pre>");
+        res.append("<h3>Verifiying the WebId</h3>")
+                .append("<p>In order for the Service Provider (SP) requesting an identity from this Identity Provider to ")
+                .append("to be comfortable that the returned WebId was not altered in transit, the whole URL is signed by this server")
+                .append(" as shown above. Here are the public keys and algorithms this server is using for the SP to verify the")
+                .append(" url.</p>");
         if ("RSA".equals(privateKey.getAlgorithm())) {
-            res.append("The signature uses the RSA with SHA-1 algorithm.");
-            res.append("The public key used by this service that verifies the signature is:");
+            res.append("<p>The signature uses the RSA with SHA-1 algorithm.</p>");
+            res.append("<p>The public key used by this service that verifies the signature is:");
             RSAPublicKey certRsakey = (RSAPublicKey) publicKey;
             res.append("<ul><li>Key Type: RSA</li>").append("<li>public exponent: ").append(
                     certRsakey.getPublicExponent()).append("</li>");
@@ -402,8 +447,7 @@ public class IdpServlet extends HttpServlet {
         } else {
             // TODO for other
         }
-        res
-                .append("For ease of use, depending on which tool you use, here is the public key in a PEM format:");
+        res.append("For ease of use, depending on which tool you use, here is the public key in a PEM format:");
         res.append("<ul><li>Public key:<pre>");
         response.getWriter().print(res);
 
@@ -420,16 +464,20 @@ public class IdpServlet extends HttpServlet {
         pemWriter.flush();
 
         res = new StringBuffer();
-        res.append("</pre></li></ul>");
-        res.append("<h3>Try it out from here</h3>");
-        res.append("<form action='' method='get'>").append(
-                "Requesting service URL: <input type='text' size='80' name='").append(
-                AUTHREQISSUER_PARAMNAME).append("'></input>").append(
-                "<input type='submit' value='test this'>").append("</form>");
-
+        res.append("</pre></li></ul>"); 
         res.append("</p></body></html>");
         response.getWriter().print(res);
     }
+
+    /**
+     * the iPhone browser requires one to force the connection
+     * and so do various versions of Safari... (not tested yet)
+     */
+   private boolean brokenBrowser(HttpServletRequest request) {
+      String ua =request.getHeader("User-Agent");
+      if (ua == null) return false;
+      return (ua.contains("iPhone") && ua.contains("os 2_2"));
+   }
 
  
 }
