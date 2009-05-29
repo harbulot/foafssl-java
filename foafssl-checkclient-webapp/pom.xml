@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>net.java.dev.sommer</groupId>
 		<artifactId>foafssl</artifactId>
-		<version>0.3.1-SNAPSHOT</version>
+		<version>0.3.2-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>foafssl-checkclient-webapp</artifactId>
 	<packaging>war</packaging>
-	<version>0.3.1-SNAPSHOT</version>
+	<version>0.3.2-SNAPSHOT</version>
 	<name>FOAF+SSL :: CheckClient Webapp</name>
 	<url>http://sommer.dev.java.net/</url>
 
