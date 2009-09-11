@@ -373,7 +373,7 @@ public class IdpServlet extends HttpServlet {
                 .append("The user that just connected right now for example has ");
         if (verifiedWebIDs==null || verifiedWebIDs.size() == 0) {
             res.append(" no verified webIDs. To try out this service create yourself a certificate using ")
-               .append(" <a href='http://test.foafssl.org/cert/'>this service</a>.");
+               .append(" the <a href='http://foaf.me'>http://foaf.me</a> service.");
         } else {
             res.append(" the following WebIDs:<ul>");
             for (FoafSslPrincipal ids : verifiedWebIDs) {
@@ -391,8 +391,16 @@ public class IdpServlet extends HttpServlet {
                 .append(AUTHREQISSUER_PARAMNAME).append("'></input>")
                 .append("<input type='submit' value='Get WebId'>")
                 .append("</form>")
-                .append("<p>This service just sends a redirect to the service given by the '")
+                .append("<p>This service just sends a redirect to the cgi given by the '")
                 .append(AUTHREQISSUER_PARAMNAME).append("' parameter, the value is the url entered in the above form.</p> ")
+                .append("<p>So for example if you had a script at <code>http://foaf.me/index.php</code> that could parse the ")
+                .append("resulting redirect from this service, you would enter that url in the form above which constructs the URL ")
+                .append("<code>https://foafssl.org/srv/idp?authreqissuer=http://foaf.me/index.php</code>. This is the URL that you would ")
+                .append(" link to on your home page with a simple <code>&lt;a href='...'&gt;login with foaf+ssl&lt;/a&gt;</code> anchor. ")
+                .append(" Users that then click on that link will be asked by this IDP to choose one of their certificates. ")
+                .append(" On receiving their certificate this server will then ")
+                .append("do foaf+ssl authentication, and redirect to <code>http://foaf.me/index.php</code> with a number of extra url ")
+                .append(" encoded parameter values, as explained below.</p>")
                 .append("<p>The redirected to URL is constructed on the following pattern:")
                 .append("<pre><b>$").append(AUTHREQISSUER_PARAMNAME).append("?").append(WEBID_PARAMNAME)
                 .append("=$webid&amp;").append(TIMESTAMP_PARAMNAME).append("=$timeStamp</b>&amp;")
@@ -476,7 +484,7 @@ public class IdpServlet extends HttpServlet {
    private boolean brokenBrowser(HttpServletRequest request) {
       String ua =request.getHeader("User-Agent");
       if (ua == null) return false;
-      return (ua.contains("iPhone") && ua.contains("os 2_2"));
+      return ua.contains("iPhone"); // won't work with iPhone 3... but for the moment...
    }
 
  

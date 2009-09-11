@@ -5,7 +5,7 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3.2-SNAPSHOT</version>
+	<version>0.3.3-SNAPSHOT</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
 
@@ -17,11 +17,11 @@
 	</licenses>
 
 	<repositories>
-		<repository>
+		<!--repository>
 			<id>aduna-repo</id>
 			<name>Aduna Repository</name>
 			<url>http://repo.aduna-software.org/maven2/releases</url>
-		</repository>
+		</repository-->
 		<repository>
 			<id>maven-restlet</id>
 			<name>Public online Restlet repository</name>
@@ -254,11 +254,11 @@
 				</configuration>
 			</plugin>
 		</plugins>
-		<extensions>
+		<!--extensions>
 			<extension>
 				<groupId>org.jvnet.wagon-svn</groupId>
 				<artifactId>wagon-svn</artifactId>
 			</extension>
-		</extensions>
+		</extensions-->
 	</build>
 </project>

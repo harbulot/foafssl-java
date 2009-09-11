@@ -42,6 +42,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.net.HttpURLConnection;
 import java.net.URISyntaxException;
 import java.net.URI;
 import java.net.URL;
@@ -93,6 +94,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * @throws org.openrdf.OpenRDFException
      * @throws java.io.IOException
      */
+    //todo: do not throw OpenRDFExceptions. I think that creates unnecessary dependencies on this module
     public Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
             X509Certificate clientCert) throws OpenRDFException, IOException {
         List<DereferencedFoafSslPrincipal> verifiedUris = new ArrayList<DereferencedFoafSslPrincipal>();
@@ -125,8 +127,13 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             PublicKey certPublicKey) throws OpenRDFException, IOException {
         URL foafname = claimedIdUri.toURL();
         URLConnection conn = foafname.openConnection();
+        if (conn instanceof HttpURLConnection) {
+           HttpURLConnection hconn = (HttpURLConnection)conn;
+           //set by default to True, but might as well override instances here, in case a default is set somewhere else in the code.
+           hconn.setInstanceFollowRedirects(true);
+        }
 
-        conn.addRequestProperty("Accept:", "application/rdf+xml");
+        conn.addRequestProperty("Accept:", "application/rdf+xml; q=1.0, text/html; q=0.7; application/xhtml+xml;q=0.8");
         conn.connect();
 
         InputStream is = conn.getInputStream();
