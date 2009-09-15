@@ -42,7 +42,7 @@
 
 	<modules>
 		<module>foafssl-verifier</module>
-		<module>foafssl-checkclient-webapp</module>
+		<module>foafssl-identity-provider</module>
 		<module>foafssl-filter</module>
 	</modules>
 
