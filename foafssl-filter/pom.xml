@@ -22,10 +22,6 @@
 
 	<dependencies>
 		<dependency>
-			<!--
-				see module howto:
-				http://docs.codehaus.org/display/MAVENUSER/Multi-modules+projects
-			-->
 			<groupId>net.java.dev.sommer</groupId>
 			<artifactId>foafssl-verifier</artifactId>
 		</dependency>
@@ -38,6 +34,7 @@
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
+			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 </project>

@@ -43,7 +43,6 @@ import java.net.URLConnection;
 import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.security.KeyStore;
-import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.Security;
 import java.security.Signature;
@@ -84,6 +83,7 @@ public class IdpServletCustomResponseTest {
     public final static String KEYSTORE_PASSWORD_STRING = "testtest";
     public final static char[] KEYSTORE_PASSWORD = KEYSTORE_PASSWORD_STRING.toCharArray();
 
+    @SuppressWarnings("unused")
     private static final String TEST_IDP_KEYNAME = "http://idp.example.org/idp/#pubkey";
     private static final String TEST_IDP_URI = "http://idp.example.org/idp/";
     private static final String TEST_SP_URI = "http://sp.example.com/sp/";
@@ -151,11 +151,12 @@ public class IdpServletCustomResponseTest {
                 ctx = ctx.createSubcontext("env");
             }
             try {
-                ctx = (Context) ctx.lookup("keystore");
+                ctx = (Context) ctx.lookup("foafsslidp");
             } catch (NameNotFoundException e) {
-                ctx = ctx.createSubcontext("keystore");
+                ctx = ctx.createSubcontext("foafsslidp");
             }
             ctx.rebind("signingKeyStore", getKeyStore());
+            ctx.rebind("signingKeyPasswordArray", KEYSTORE_PASSWORD);
         } finally {
             if (ctx != null) {
                 ctx.close();
@@ -213,10 +214,9 @@ public class IdpServletCustomResponseTest {
          */
         idpServletTester = new ServletTester();
         idpServletTester.setContextPath("/idp");
-        ServletHolder servletHolder = idpServletTester.addServlet(IdpServlet.class, "/*");
-        servletHolder.setInitParameter("keyPassword", KEYSTORE_PASSWORD_STRING);
-        servletHolder.setInitParameter("issuerName", TEST_IDP_URI);
-        servletHolder.setInitParameter("keyName", TEST_IDP_KEYNAME);
+        @SuppressWarnings("unused")
+        ServletHolder servletHolder = idpServletTester.addServlet(FoafSslCustomIdpServlet.class,
+                "/*");
         idpServletTester.start();
     }
 
@@ -226,7 +226,8 @@ public class IdpServletCustomResponseTest {
          * Creates a fake simple authn request.
          */
         Reference authnReqResourceRef = new Reference(TEST_IDP_URI);
-        authnReqResourceRef.addQueryParameter(IdpServlet.AUTHREQISSUER_PARAMNAME, TEST_SP_URI);
+        authnReqResourceRef.addQueryParameter(FoafSslCustomIdpServlet.AUTHREQISSUER_PARAMNAME,
+                TEST_SP_URI);
 
         /*
          * Sets up the request in the Jetty tester. The URL to which to send the
@@ -267,13 +268,11 @@ public class IdpServletCustomResponseTest {
          * Tries to verify the signature, if present.
          */
         String authnUriParam = authnRespResourceRefQueryForm
-                .getFirstValue(IdpServlet.WEBID_PARAMNAME);
+                .getFirstValue(FoafSslCustomIdpServlet.WEBID_PARAMNAME);
         String authnDateTimeParam = authnRespResourceRefQueryForm
-                .getFirstValue(IdpServlet.TIMESTAMP_PARAMNAME);
-        String sigAlgParam = authnRespResourceRefQueryForm
-                .getFirstValue(IdpServlet.SIGALG_PARAMNAME);
+                .getFirstValue(FoafSslCustomIdpServlet.TIMESTAMP_PARAMNAME);
         Parameter signatureParam = authnRespResourceRefQueryForm
-                .getFirst(IdpServlet.SIGNATURE_PARAMNAME);
+                .getFirst(FoafSslCustomIdpServlet.SIGNATURE_PARAMNAME);
 
         assertNotNull("Signature?", signatureParam);
 
@@ -288,13 +287,6 @@ public class IdpServletCustomResponseTest {
 
         byte[] signatureBytes = Base64.decode(signatureParam.getValue());
         String sigAlg = null;
-        // if ("dsa-sha1".equals(sigAlgParam)) {
-        // sigAlg = "SHA1withDSA";
-        // } else if ("rsa-sha1".equals(sigAlgParam)) {
-        // sigAlg = "SHA1withRSA";
-        // } else {
-        // fail("Unsupported signature algorithm.");
-        // }
         if ("RSA".equals(getPublicKey().getAlgorithm())) {
             sigAlg = "SHA1withRSA";
         } else if ("DSA".equals(getPublicKey().getAlgorithm())) {
