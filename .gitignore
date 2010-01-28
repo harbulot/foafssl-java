@@ -1,0 +1,12 @@
+.classpath
+.project
+.settings
+target
+target-eclipse
+derby.log
+*.orig
+*.versionsBackup
+*.bak
+*.log
+*~
+.checkstyle
