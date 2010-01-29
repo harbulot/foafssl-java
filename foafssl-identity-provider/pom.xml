@@ -9,10 +9,10 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>foafssl-identity-provider-webapp</artifactId>
-	<packaging>war</packaging>
 	<version>${foafssl.version}</version>
 	<name>FOAF+SSL :: Identity Provider</name>
 	<url>http://sommer.dev.java.net/</url>
+	<packaging>war</packaging>
 
 	<licenses>
 		<license>
@@ -28,10 +28,16 @@
 			<version>0.2-SNAPSHOT</version>
 			<type>jar</type>
 		</dependency>
+
 		<dependency>
 			<groupId>net.java.dev.sommer</groupId>
 			<artifactId>foafssl-verifier</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>net.java.dev.sommer</groupId>
+			<artifactId>foafssl-saml-common</artifactId>
+		</dependency>
+
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk16</artifactId>

@@ -11,6 +11,7 @@
 	<artifactId>foafssl-filter</artifactId>
 	<version>${foafssl.version}</version>
 	<modelVersion>4.0.0</modelVersion>
+	<packaging>jar</packaging>
 	<url>http://maven.apache.org</url>
 
 	<licenses>

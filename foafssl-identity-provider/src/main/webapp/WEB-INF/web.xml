@@ -4,7 +4,7 @@
 	xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd">
 	<display-name>Identity Provider for FOAF+SSL</display-name>
 	<servlet>
-		<servlet-name>shortredirect</servlet-name>
+		<servlet-name>shortredirectidp</servlet-name>
 		<servlet-class>net.java.dev.sommer.foafssl.login.ShortRedirectIdpServlet</servlet-class>
 		<!--
 		<init-param>
@@ -37,8 +37,46 @@
 		</init-param>
 		-->
 	</servlet>
+	<servlet>
+		<servlet-name>samlidp</servlet-name>
+		<servlet-class>net.java.dev.sommer.foafssl.login.SamlIdpServlet</servlet-class>
+		<!--
+		<init-param>
+			<description>The path to the keystore.</description>
+			<param-name>keystorePath</param-name>
+			<param-value>...</param-value>
+		</init-param>
+		<init-param>
+			<description>The type of the keystore.</description>
+			<param-name>keystoreType</param-name>
+			<param-value>...</param-value>
+		</init-param>
+		<init-param>
+			<description>The password of the keystore.</description>
+			<param-name>keystorePassword</param-name>
+			<param-value>...</param-value>
+		</init-param>
+		<init-param>
+			<description>The password of the key in the keystore,
+			if different from the keystore password.</description>
+			<param-name>keyPassword</param-name>
+			<param-value>...</param-value>
+		</init-param>
+		<init-param>
+			<description>The alias name for the key to use in the keystore.
+			By default, the first certificate with a private key 
+			found will be used if this is not specified.</description>
+			<param-name>keyAlias</param-name>
+			<param-value>...</param-value>
+		</init-param>
+		-->
+	</servlet>
 	<servlet-mapping>
-		<servlet-name>shortredirect</servlet-name>
-		<url-pattern>/idp</url-pattern>
+		<servlet-name>shortredirectidp</servlet-name>
+		<url-pattern>/shortredirectidp</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>samlidp</servlet-name>
+		<url-pattern>/samlidp</url-pattern>
 	</servlet-mapping>
 </web-app>

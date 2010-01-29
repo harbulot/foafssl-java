@@ -60,12 +60,25 @@
 			<name>Java.net Repository for Maven</name>
 			<url>http://download.java.net/maven/2/</url>
 		</repository>
+		<repository>
+			<id>shibboleth-opensaml</id>
+			<name>Shibboleth - OpenSAML</name>
+			<url>http://shibboleth.internet2.edu/downloads/maven2</url>
+			<layout>default</layout>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<modules>
 		<module>foafssl-verifier</module>
 		<module>foafssl-identity-provider</module>
 		<module>foafssl-filter</module>
+		<module>foafssl-saml-common</module>
 	</modules>
 
 	<dependencyManagement>
@@ -85,11 +98,10 @@
 				<artifactId>foafssl-filter</artifactId>
 				<version>${foafssl.version}</version>
 			</dependency>
-
 			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.4</version>
+				<groupId>net.java.dev.sommer</groupId>
+				<artifactId>foafssl-saml-common</artifactId>
+				<version>${foafssl.version}</version>
 			</dependency>
 
 			<dependency>
@@ -103,7 +115,8 @@
 				<artifactId>javassist</artifactId>
 				<version>3.8.0.GA</version>
 			</dependency>
-			<!-- OpenRDF modules referenced by Sommer -->
+
+			<!-- OpenRDF modules  -->
 			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-model</artifactId>
@@ -253,6 +266,47 @@
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-runtime</artifactId>
 				<version>${sesame.version}</version>
+			</dependency>
+
+			<!-- SAML modules -->
+			<dependency>
+				<groupId>org.opensaml</groupId>
+				<artifactId>opensaml</artifactId>
+				<version>2.2.3</version>
+			</dependency>
+			<dependency>
+				<groupId>org.opensaml</groupId>
+				<artifactId>xmltooling</artifactId>
+				<version>1.2.0</version>
+			</dependency>
+
+			<!--  Logging -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-simple</artifactId>
+				<version>1.5.5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>1.5.5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>jcl-over-slf4j</artifactId>
+				<version>1.5.5</version>
+			</dependency>
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>log4j-over-slf4j</artifactId>
+				<version>1.5.5</version>
+			</dependency>
+
+			<!-- Testing -->
+			<dependency>
+				<groupId>junit</groupId>
+				<artifactId>junit</artifactId>
+				<version>4.4</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
