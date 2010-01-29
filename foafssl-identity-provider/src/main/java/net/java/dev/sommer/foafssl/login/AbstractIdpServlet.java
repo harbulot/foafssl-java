@@ -85,6 +85,10 @@ public abstract class AbstractIdpServlet extends HttpServlet {
     public final static String KEY_PASSWORD_INITPARAM = "keyPassword";
     public final static String ALIAS_INITPARAM = "keyAlias";
 
+    public final static String VERIFIED_WEBID_PRINCIPALS_REQATTR = "net.java.dev.sommer.foafssl.login.verified_webid_principals";
+    public final static String SIGNING_CERT_REQATTR = "net.java.dev.sommer.foafssl.login.signing_cert";
+    public final static String SIGNING_PUBKEY_REQATTR = "net.java.dev.sommer.foafssl.login.signing_pubkey";
+
     protected static FoafSslVerifier FOAF_SSL_VERIFIER = new DereferencingFoafSslVerifier();
 
     protected PrivateKey privateKey = null;
@@ -208,7 +212,7 @@ public abstract class AbstractIdpServlet extends HttpServlet {
         } catch (NamingException e) {
             LOG.log(Level.INFO, "Unable to load JNDI context.", e);
         }
-        
+
         if (keyPasswordArray == null) {
             keyPasswordArray = keystorePasswordArray;
         }
