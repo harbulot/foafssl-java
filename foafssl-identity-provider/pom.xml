@@ -5,12 +5,12 @@
 	<parent>
 		<groupId>net.java.dev.sommer</groupId>
 		<artifactId>foafssl</artifactId>
-		<version>0.3.3-SNAPSHOT</version>
+		<version>${foafssl.version}</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>foafssl-identity-provider-webapp</artifactId>
 	<packaging>war</packaging>
-	<version>0.3.3-SNAPSHOT</version>
+	<version>${foafssl.version}</version>
 	<name>FOAF+SSL :: Identity Provider</name>
 	<url>http://sommer.dev.java.net/</url>
 

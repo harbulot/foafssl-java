@@ -5,11 +5,12 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>0.3.3-SNAPSHOT</version>
+	<version>${foafssl.version}</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
 
 	<properties>
+		<foafssl.version>0.4-SNAPSHOT</foafssl.version>
 		<sesame.version>2.2.4</sesame.version>
 	</properties>
 
@@ -31,6 +32,10 @@
 				</configuration>
 			</plugin>
 		</plugins>
+		<!--
+			<extensions> <extension> <groupId>org.jvnet.wagon-svn</groupId>
+			<artifactId>wagon-svn</artifactId> </extension> </extensions>
+		-->
 	</build>
 
 	<repositories>
@@ -68,17 +73,17 @@
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-verifier</artifactId>
-				<version>0.3.3-SNAPSHOT</version>
+				<version>${foafssl.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-checkclient-webapp</artifactId>
-				<version>0.3.3-SNAPSHOT</version>
+				<version>${foafssl.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-filter</artifactId>
-				<version>0.3.3-SNAPSHOT</version>
+				<version>${foafssl.version}</version>
 			</dependency>
 
 			<dependency>
@@ -251,4 +256,11 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>java.net-m2-repository</id>
+			<url>java-net:/maven2-repository/trunk/repository/</url>
+		</repository>
+	</distributionManagement>
 </project>
