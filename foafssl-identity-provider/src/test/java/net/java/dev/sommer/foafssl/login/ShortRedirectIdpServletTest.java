@@ -78,7 +78,7 @@ import org.restlet.data.Reference;
 /**
  * @author Bruno Harbulot (Bruno.Harbulot@manchester.ac.uk)
  */
-public class IdpServletCustomResponseTest {
+public class ShortRedirectIdpServletTest {
     public final static String CERTIFICATES_DIRECTORY = "org/jsslutils/certificates/";
     public final static String KEYSTORE_PASSWORD_STRING = "testtest";
     public final static char[] KEYSTORE_PASSWORD = KEYSTORE_PASSWORD_STRING.toCharArray();
@@ -194,7 +194,7 @@ public class IdpServletCustomResponseTest {
 
                                 @Override
                                 public InputStream getInputStream() throws IOException {
-                                    return IdpServletCustomResponseTest.class
+                                    return ShortRedirectIdpServletTest.class
                                             .getResourceAsStream(TEST_FOAF_FILENAME);
                                 }
                             };
@@ -215,7 +215,7 @@ public class IdpServletCustomResponseTest {
         idpServletTester = new ServletTester();
         idpServletTester.setContextPath("/idp");
         @SuppressWarnings("unused")
-        ServletHolder servletHolder = idpServletTester.addServlet(FoafSslCustomIdpServlet.class,
+        ServletHolder servletHolder = idpServletTester.addServlet(ShortRedirectIdpServlet.class,
                 "/*");
         idpServletTester.start();
     }
@@ -226,7 +226,7 @@ public class IdpServletCustomResponseTest {
          * Creates a fake simple authn request.
          */
         Reference authnReqResourceRef = new Reference(TEST_IDP_URI);
-        authnReqResourceRef.addQueryParameter(FoafSslCustomIdpServlet.AUTHREQISSUER_PARAMNAME,
+        authnReqResourceRef.addQueryParameter(ShortRedirectIdpServlet.AUTHREQISSUER_PARAMNAME,
                 TEST_SP_URI);
 
         /*
@@ -268,11 +268,11 @@ public class IdpServletCustomResponseTest {
          * Tries to verify the signature, if present.
          */
         String authnUriParam = authnRespResourceRefQueryForm
-                .getFirstValue(FoafSslCustomIdpServlet.WEBID_PARAMNAME);
+                .getFirstValue(ShortRedirectIdpServlet.WEBID_PARAMNAME);
         String authnDateTimeParam = authnRespResourceRefQueryForm
-                .getFirstValue(FoafSslCustomIdpServlet.TIMESTAMP_PARAMNAME);
+                .getFirstValue(ShortRedirectIdpServlet.TIMESTAMP_PARAMNAME);
         Parameter signatureParam = authnRespResourceRefQueryForm
-                .getFirst(FoafSslCustomIdpServlet.SIGNATURE_PARAMNAME);
+                .getFirst(ShortRedirectIdpServlet.SIGNATURE_PARAMNAME);
 
         assertNotNull("Signature?", signatureParam);
 
@@ -342,7 +342,7 @@ public class IdpServletCustomResponseTest {
         public void init(FilterConfig config) throws ServletException {
             try {
                 InputStreamReader certReader = new InputStreamReader(
-                        IdpServletCustomResponseTest.class.getResourceAsStream(TEST_CERT_FILENAME));
+                        ShortRedirectIdpServletTest.class.getResourceAsStream(TEST_CERT_FILENAME));
 
                 PEMReader pemReader = new PEMReader(certReader);
                 while (pemReader.ready()) {

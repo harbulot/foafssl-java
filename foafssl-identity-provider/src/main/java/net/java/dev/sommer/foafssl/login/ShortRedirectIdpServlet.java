@@ -60,10 +60,10 @@ import org.bouncycastle.util.encoders.Base64;
  * @author Henry Story
  * 
  */
-public class FoafSslCustomIdpServlet extends AbstractIdpServlet {
+public class ShortRedirectIdpServlet extends AbstractIdpServlet {
     private static final long serialVersionUID = 1L;
 
-    public static final transient Logger LOG = Logger.getLogger(FoafSslCustomIdpServlet.class
+    public static final transient Logger LOG = Logger.getLogger(ShortRedirectIdpServlet.class
             .getName());
 
     public static final String SIGNATURE_PARAMNAME = "sig";
