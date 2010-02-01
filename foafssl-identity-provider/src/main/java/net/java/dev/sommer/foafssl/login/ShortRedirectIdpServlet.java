@@ -103,6 +103,9 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
                 if (ctx != null) {
                     ctx.close();
                 }
+                if (initCtx != null) {
+                    initCtx.close();
+                }
             }
         } catch (NameNotFoundException e) {
             LOG.log(Level.INFO, "Unable to load JNDI context.", e);
