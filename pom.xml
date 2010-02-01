@@ -65,6 +65,7 @@
 	<modules>
 		<module>foafssl-verifier</module>
 		<module>foafssl-identity-provider</module>
+		<module>foafssl-identity-provider-webapp</module>
 		<module>foafssl-filter</module>
 	</modules>
 
@@ -77,7 +78,12 @@
 			</dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
-				<artifactId>foafssl-checkclient-webapp</artifactId>
+				<artifactId>foafssl-identity-provider</artifactId>
+				<version>${foafssl.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>net.java.dev.sommer</groupId>
+				<artifactId>foafssl-identity-provider-webapp</artifactId>
 				<version>${foafssl.version}</version>
 			</dependency>
 			<dependency>

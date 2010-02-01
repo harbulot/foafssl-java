@@ -8,27 +8,29 @@
 <%@page import="org.bouncycastle.openssl.PEMWriter"%>
 <%@page import="java.security.cert.Certificate"%><html>
 <head>
-<title>FOAF+SSL identity provider servlet</title>
+<title>FOAF+SSL Identity Provider servlet</title>
 </head>
 <body>
-<h1>FOAF+SSL identity provider servlet</h1>
-<p>This is a very basic Identity Provider for <a
+<h1>FOAF+SSL Identity Provider servlet</h1>
+<p>This is a very basic Identity Provider (IdP) for <a
 	href='http://esw.w3.org/topic/foaf+ssl'>FOAF+SSL</a>. It identifies a
 user connecting using SSL to this service, and returns the <a
 	href='http://esw.w3.org/topic/WebID'>WebID</a> of the user to the
-service in a secure manner. The user that just connected right now for
-example has <%
+service in a secure manner.
+</p>
+
+<p>For example, the client that has just loaded this page (you) <%
 	@SuppressWarnings("unchecked")
 	Collection<? extends FoafSslPrincipal> verifiedWebIDs = (Collection<? extends FoafSslPrincipal>) request
 			.getAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR);
 	if (verifiedWebIDs == null || verifiedWebIDs.size() == 0) {
-%> no verified webIDs. To try out this service create yourself a
+%> does not have a verified WebID. To try out this IdP service, create yourself a
 certificate using the <a href='http://foaf.me'>http://foaf.me</a>
 service.</p>
 
 <%
 	} else {
-		out.println(" the following WebIDs:<ul>");
+		out.println(" have the following WebIDs:<ul>");
 		for (FoafSslPrincipal ids : verifiedWebIDs) {
 			out.println("<li><a href='" + ids.getUri() + "'>"
 					+ ids.getUri() + "</a></li>");
@@ -36,34 +38,35 @@ service.</p>
 		out.println("</ul>");
 	}
 %>
-<h3>Getting the WebId</h3>
-<h4>Getting an identifier</h4>
-<p>To request identification, use the following form:
+<h3>Getting the WebID</h3>
+<h4>Using this Identity Provider</h4>
+<p>To use this IdP to authenticate to a service that uses this <em>short redirect</em> method, use the following form:
 <form action='' method='get'>Requesting service URL: <input
 	type='text' size='80' name='authreqissuer'></input><input type='submit'
-	value='Get WebId'></form>
-<p>This service just sends a redirect to the cgi given by the
-'authreqissuer' parameter, the value is the url entered in the above
-form.</p>
-<p>So for example if you had a script at <code>http://foaf.me/index.php</code>
-that could parse the resulting redirect from this service, you would
-enter that url in the form above which constructs the URL <code>https://foafssl.org/srv/idp?authreqissuer=http://foaf.me/index.php</code>.
+	value='Log in to this service provider'></form>
+<p>This will send a redirection to the URL of the Service Provider (SP) you have specified in the form above, including a signed 
+assertion by this IdP about your WebID.</p>
+<p>For example, if the Service Provider's URL is <code>http://foaf.me/index.php</code>, and if this service
+can parse the resulting redirect from this IdP service, you could
+enter this URL in the form above, which constructs the URL <code>https://foafssl.org/srv/idp?authreqissuer=http://foaf.me/index.php</code>.
+
 This is the URL that you would link to on your home page with a simple <code>&lt;a
-href='...'&gt;login with foaf+ssl&lt;/a&gt;</code> anchor. Users that then
-click on that link will be asked by this IDP to choose one of their
-certificates. On receiving their certificate this server will then do
-foaf+ssl authentication, and redirect to <code>http://foaf.me/index.php</code>
+href='...'&gt;Login with FOAF+SSL&lt;/a&gt;</code> anchor.
+
+Users who then click on that link will be asked by this IdP to choose one of their
+certificates. Upon reception of their certificate, this server will then do
+FOAF+SSL authentication, and redirect to <code>http://foaf.me/index.php</code>
 with a number of extra url encoded parameter values, as explained below.</p>
 <p>The redirected to URL is constructed on the following pattern:<pre><b>$authreqissuer?webid=$webid&amp;ts=$timeStamp</b>&amp;sig=$URLSignature</pre>Where
 the above variables have the following meanings:
 <ul>
 	<li><code>$authreqissuer</code> is the URL passed by the server in
 	the initial request.</li>
-	<li><code>$webid</code> is the webid of the user connecting.
+	<li><code>$webid</code> is the WebID of the user connecting.
 	<li><code>$timeStamp</code> is a time stamp in XML Schema format
 	(same as used by Atom). This is needed to reduce the ease of developing
 	replay attacks.
-	<li><code>$URLSignature</code> is the signature of the whole url
+	<li><code>$URLSignature</code> is the signature of the whole URL
 	in bold above.
 </ul>
 </p>
@@ -75,7 +78,7 @@ $code can be either one of
 	the SP to propose the client other authentication mechanisms.
 	<li><code>IdPError</code>: for some error in the IdP setup. Warn
 	the IdP administrator!
-	<li>other messages, not standardised yet
+	<li>other messages, not standardised yet</li>
 </ul>
 </p>
 <h3>Verifiying the WebId</h3>
@@ -108,7 +111,6 @@ using for the SP to verify the url.</p>
 		out
 				.println("For ease of use, depending on which tool you use, here is the public key in a PEM format:");
 		out.println("<ul><li>Public key:<pre>");
-
 		PEMWriter pemWriter = new PEMWriter(out);
 		pemWriter.writeObject(pubKey);
 		pemWriter.flush();

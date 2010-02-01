@@ -36,9 +36,15 @@
 			<param-value>...</param-value>
 		</init-param>
 		-->
+		<init-param>
+			<description>Name of the JSP (or servlet) to include for 
+			the short redirect usage message.</description>
+			<param-name>shortRedirectUsageInclude</param-name>
+			<param-value>shortredirectusage.jsp</param-value>
+		</init-param>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>shortredirect</servlet-name>
-		<url-pattern>/idp</url-pattern>
+		<url-pattern>/</url-pattern>
 	</servlet-mapping>
 </web-app>

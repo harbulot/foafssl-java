@@ -45,6 +45,10 @@ import java.util.Collection;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -72,6 +76,41 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
     public static final String ERROR_PARAMNAME = "error";
     public static final String AUTHREQISSUER_PARAMNAME = "authreqissuer";
 
+    public static final String SHORT_REDIRECT_USAGE_INCLUDE_INITPARAM = "shortRedirectUsageInclude";
+    public static final String SHORT_REDIRECT_USAGE_INCLUDE_JNDI_NAME = "foafssl/shortRedirectUsageInclude";
+
+    protected String shortRedirectJsp;
+
+    @Override
+    public void init() throws ServletException {
+        super.init();
+
+        shortRedirectJsp = getInitParameter(SHORT_REDIRECT_USAGE_INCLUDE_INITPARAM);
+
+        try {
+            Context initCtx = new InitialContext();
+            Context ctx = (Context) initCtx.lookup("java:comp/env");
+            try {
+                try {
+                    String jndiShortRedirectJsp = (String) ctx
+                            .lookup(SHORT_REDIRECT_USAGE_INCLUDE_JNDI_NAME);
+                    if (jndiShortRedirectJsp != null) {
+                        shortRedirectJsp = jndiShortRedirectJsp;
+                    }
+                } catch (NameNotFoundException e) {
+                }
+            } finally {
+                if (ctx != null) {
+                    ctx.close();
+                }
+            }
+        } catch (NameNotFoundException e) {
+            LOG.log(Level.INFO, "Unable to load JNDI context.", e);
+        } catch (NamingException e) {
+            LOG.log(Level.INFO, "Unable to load JNDI context.", e);
+        }
+    }
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
@@ -94,9 +133,12 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             try {
                 verifiedWebIDs = FOAF_SSL_VERIFIER.verifyFoafSslCertificate(foafSslCertificate);
             } catch (Exception e) {
-                // TODO case where replyTo is null?
-                redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
-                        + URLEncoder.encode(e.getMessage(), "UTF-8"));
+                if (replyTo != null) {
+                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
+                            + URLEncoder.encode(e.getMessage(), "UTF-8"));
+                } else {
+                    // TODO error message
+                }
                 return;
             }
         }
@@ -118,8 +160,8 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         } else {
             request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
                     verifiedWebIDs);
-            RequestDispatcher requestDispatcher = request
-                    .getRequestDispatcher("shortredirectusage.jsp");
+            response.setContentType("text/html");
+            RequestDispatcher requestDispatcher = request.getRequestDispatcher(shortRedirectJsp);
             requestDispatcher.include(request, response);
         }
     }
