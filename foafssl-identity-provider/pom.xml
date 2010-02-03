@@ -9,7 +9,6 @@
 	</parent>
 	<artifactId>foafssl-identity-provider</artifactId>
 	<packaging>jar</packaging>
-	<version>0.4-SNAPSHOT</version>
 	<name>FOAF+SSL :: Identity Provider Core Library</name>
 	<url>http://sommer.dev.java.net/</url>
 

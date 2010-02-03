@@ -9,7 +9,6 @@
 	<name>FOAF+SSL :: Servlet Filter</name>
 	<description>A Servlet Filter to do the authentication.</description>
 	<artifactId>foafssl-filter</artifactId>
-	<version>0.4-SNAPSHOT</version>
 	<modelVersion>4.0.0</modelVersion>
 	<url>http://maven.apache.org</url>
 
