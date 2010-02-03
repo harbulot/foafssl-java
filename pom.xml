@@ -5,7 +5,7 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>${foafssl.version}</version>
+	<version>0.4-SNAPSHOT</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
 

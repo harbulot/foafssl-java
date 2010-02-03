@@ -1,16 +1,15 @@
-
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>net.java.dev.sommer</groupId>
 		<artifactId>foafssl</artifactId>
-		<version>${foafssl.version}</version>
+		<version>0.4-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 	<artifactId>foafssl-identity-provider</artifactId>
 	<packaging>jar</packaging>
-	<version>${foafssl.version}</version>
+	<version>0.4-SNAPSHOT</version>
 	<name>FOAF+SSL :: Identity Provider Core Library</name>
 	<url>http://sommer.dev.java.net/</url>
 
@@ -30,14 +29,14 @@
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk16</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>javax.servlet</groupId>
 			<artifactId>servlet-api</artifactId>
 			<version>2.5</version>
 			<scope>provided</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
