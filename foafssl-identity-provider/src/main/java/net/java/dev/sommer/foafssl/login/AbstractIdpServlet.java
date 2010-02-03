@@ -61,7 +61,7 @@ import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
  * 
  */
 public abstract class AbstractIdpServlet extends HttpServlet {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     public static final transient Logger LOG = Logger.getLogger(AbstractIdpServlet.class.getName());
 
@@ -89,11 +89,11 @@ public abstract class AbstractIdpServlet extends HttpServlet {
     public final static String SIGNING_CERT_REQATTR = "net.java.dev.sommer.foafssl.login.signing_cert";
     public final static String SIGNING_PUBKEY_REQATTR = "net.java.dev.sommer.foafssl.login.signing_pubkey";
 
-    protected static FoafSslVerifier FOAF_SSL_VERIFIER = new DereferencingFoafSslVerifier();
+    protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new DereferencingFoafSslVerifier();
 
-    protected PrivateKey privateKey = null;
-    protected PublicKey publicKey = null;
-    protected Certificate certificate = null;
+    protected volatile PrivateKey privateKey = null;
+    protected volatile PublicKey publicKey = null;
+    protected volatile Certificate certificate = null;
 
     /**
      * Initialises the servlet: loads the keystore/keys to use to sign the
@@ -101,6 +101,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
      */
     @Override
     public void init() throws ServletException {
+        super.init();
+
         KeyStore keyStore = null;
 
         String keystorePath = getInitParameter(KEYSTORE_PATH_INITPARAM);
@@ -120,6 +122,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             }
         }
         String alias = getInitParameter(ALIAS_INITPARAM);
+        Certificate certificate = null;
+        PrivateKey privateKey = null;
 
         try {
             Context initCtx = new InitialContext();
@@ -304,6 +308,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             }
         }
 
-        publicKey = certificate.getPublicKey();
+        this.certificate = certificate;
+        this.publicKey = certificate.getPublicKey();
+        this.privateKey = privateKey;
     }
 }

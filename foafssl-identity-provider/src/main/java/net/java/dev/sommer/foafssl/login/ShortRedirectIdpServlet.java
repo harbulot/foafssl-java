@@ -64,7 +64,7 @@ import org.bouncycastle.util.encoders.Base64;
  * 
  */
 public class ShortRedirectIdpServlet extends AbstractIdpServlet {
-    private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 2L;
 
     public static final transient Logger LOG = Logger.getLogger(ShortRedirectIdpServlet.class
             .getName());
@@ -79,13 +79,13 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
     public static final String SHORT_REDIRECT_USAGE_INCLUDE_INITPARAM = "shortRedirectUsageInclude";
     public static final String SHORT_REDIRECT_USAGE_INCLUDE_JNDI_NAME = "foafssl/shortRedirectUsageInclude";
 
-    protected String shortRedirectJsp;
+    protected volatile String shortRedirectInclude;
 
     @Override
     public void init() throws ServletException {
         super.init();
 
-        shortRedirectJsp = getInitParameter(SHORT_REDIRECT_USAGE_INCLUDE_INITPARAM);
+        shortRedirectInclude = getInitParameter(SHORT_REDIRECT_USAGE_INCLUDE_INITPARAM);
 
         try {
             Context initCtx = new InitialContext();
@@ -95,7 +95,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
                     String jndiShortRedirectJsp = (String) ctx
                             .lookup(SHORT_REDIRECT_USAGE_INCLUDE_JNDI_NAME);
                     if (jndiShortRedirectJsp != null) {
-                        shortRedirectJsp = jndiShortRedirectJsp;
+                        shortRedirectInclude = jndiShortRedirectJsp;
                     }
                 } catch (NameNotFoundException e) {
                 }
@@ -164,7 +164,8 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
                     verifiedWebIDs);
             response.setContentType("text/html");
-            RequestDispatcher requestDispatcher = request.getRequestDispatcher(shortRedirectJsp);
+            RequestDispatcher requestDispatcher = request
+                    .getRequestDispatcher(shortRedirectInclude);
             requestDispatcher.include(request, response);
         }
     }
