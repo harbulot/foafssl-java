@@ -48,6 +48,7 @@ import java.net.URI;
 import java.net.URL;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
+import java.util.Date;
 import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
@@ -94,7 +95,8 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * @throws org.openrdf.OpenRDFException
      * @throws java.io.IOException
      */
-    //todo: do not throw OpenRDFExceptions. I think that creates unnecessary dependencies on this module
+    // todo: do not throw OpenRDFExceptions. I think that creates unnecessary
+    // dependencies on this module
     public Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
             X509Certificate clientCert) throws OpenRDFException, IOException {
         List<DereferencedFoafSslPrincipal> verifiedUris = new ArrayList<DereferencedFoafSslPrincipal>();
@@ -102,7 +104,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
 
         for (URI candidateUri : candidateUris) {
             DereferencedFoafSslPrincipal principal = verifyByDereferencing(candidateUri, clientCert
-                    .getPublicKey());
+                    .getPublicKey(), clientCert.getNotBefore(), clientCert.getNotAfter());
             if (principal != null) {
                 verifiedUris.add(principal);
             }
@@ -118,22 +120,71 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      *            claimed Web ID.
      * @param certPublicKey
      *            public key provided in the X.509 certificate.
+     * @param notBeforeDate
+     *            date before which the certificate is not valid (although this
+     *            may not be null in an X.509 certificate, this may be null when
+     *            using this method).
+     * @param notAfterDate
+     *            date after which the certificate is not valid (although this
+     *            may not be null in an X.509 certificate, this may be null when
+     *            using this method).
      * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
      *         case of success, null otherwise.
      * @throws OpenRDFException
      * @throws IOException
      */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
-            PublicKey certPublicKey) throws OpenRDFException, IOException {
+            PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate)
+            throws OpenRDFException, IOException {
+        return verifyByDereferencing(claimedIdUri, certPublicKey, notBeforeDate, notAfterDate,
+                new Date());
+    }
+
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     * 
+     * @param claimedIdUri
+     *            claimed Web ID.
+     * @param certPublicKey
+     *            public key provided in the X.509 certificate.
+     * @param notBeforeDate
+     *            date before which the certificate is not valid (although this
+     *            may not be null in an X.509 certificate, this may be null when
+     *            using this method).
+     * @param notAfterDate
+     *            date after which the certificate is not valid (although this
+     *            may not be null in an X.509 certificate, this may be null when
+     *            using this method).
+     * @param currentDate
+     * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
+     *         case of success, null otherwise.
+     * @throws OpenRDFException
+     * @throws IOException
+     */
+    public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
+            PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate, Date currentDate)
+            throws OpenRDFException, IOException {
         URL foafname = claimedIdUri.toURL();
         URLConnection conn = foafname.openConnection();
         if (conn instanceof HttpURLConnection) {
-           HttpURLConnection hconn = (HttpURLConnection)conn;
-           //set by default to True, but might as well override instances here, in case a default is set somewhere else in the code.
-           hconn.setInstanceFollowRedirects(true);
+            HttpURLConnection hconn = (HttpURLConnection) conn;
+            // set by default to True, but might as well override instances
+            // here, in case a default is set somewhere else in the code.
+            hconn.setInstanceFollowRedirects(true);
         }
 
-        conn.addRequestProperty("Accept:", "application/rdf+xml; q=1.0, text/html; q=0.7; application/xhtml+xml;q=0.8");
+        if (currentDate != null) {
+            if ((notBeforeDate != null) && (currentDate.before(notBeforeDate))) {
+                return null;
+            }
+            if ((notAfterDate != null) && (currentDate.before(notAfterDate))) {
+                return null;
+            }
+        }
+
+        conn.addRequestProperty("Accept:",
+                "application/rdf+xml; q=1.0, text/html; q=0.7; application/xhtml+xml;q=0.8");
         conn.connect();
 
         InputStream is = conn.getInputStream();
