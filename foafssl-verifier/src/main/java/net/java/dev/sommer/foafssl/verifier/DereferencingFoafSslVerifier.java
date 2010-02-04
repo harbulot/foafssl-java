@@ -178,7 +178,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             if ((notBeforeDate != null) && (currentDate.before(notBeforeDate))) {
                 return null;
             }
-            if ((notAfterDate != null) && (currentDate.before(notAfterDate))) {
+            if ((notAfterDate != null) && (currentDate.after(notAfterDate))) {
                 return null;
             }
         }
