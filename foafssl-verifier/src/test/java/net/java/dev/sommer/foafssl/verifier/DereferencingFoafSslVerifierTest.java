@@ -57,144 +57,156 @@ import org.junit.Test;
  */
 public class DereferencingFoafSslVerifierTest {
 
-   public static final String TEST_GOOD_FOAF_FILENAME = "dummy-foaf.rdf.xml";
-   public static final String TEST_GOOD_FOAF_XHTML_FILENAME = "dummy-foaf.xhtml.xml";
-   public static final String TEST_GOOD_FOAF_HTML_FILENAME = "dummy-foaf.html";
-   public static final String TEST_WRONG_FOAF_FILENAME = "dummy-foaf-wrong.rdf.xml";
-   public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";
-   public static final String TEST_FOAF_LOCATION = "http://foaf.example.net/bruno";
-   public static final URI TEST_WEB_ID_URI = URI.create(TEST_FOAF_LOCATION + "#me");
-   public static final URL TEST_FOAF_URL;
+    public static final String TEST_GOOD_FOAF_FILENAME = "dummy-foaf.rdf.xml";
+    public static final String TEST_GOOD_FOAF_XHTML_FILENAME = "dummy-foaf.xhtml.xml";
+    public static final String TEST_GOOD_FOAF_HTML_FILENAME = "dummy-foaf.html";
+    public static final String TEST_WRONG_FOAF_FILENAME = "dummy-foaf-wrong.rdf.xml";
+    public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";
+    public static final String TEST_FOAF_LOCATION = "http://foaf.example.net/bruno";
+    public static final URI TEST_WEB_ID_URI = URI.create(TEST_FOAF_LOCATION + "#me");
+    public static final URL TEST_FOAF_URL;
 
-   static {
-      try {
-         TEST_FOAF_URL = new URL(TEST_FOAF_LOCATION);
-      } catch (MalformedURLException e) {
-         throw new RuntimeException(e);
-      }
-   }
-   private DereferencingFoafSslVerifier verifier;
-   private X509Certificate x509Certificate;
+    static {
+        try {
+            TEST_FOAF_URL = new URL(TEST_FOAF_LOCATION);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private DereferencingFoafSslVerifier verifier;
+    private X509Certificate x509Certificate;
 
-   @Before
-   public void setUp() throws Exception {
-      if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
-         Security.addProvider(new BouncyCastleProvider());
-      }
+    @Before
+    public void setUp() throws Exception {
+        if (Security.getProvider(BouncyCastleProvider.PROVIDER_NAME) == null) {
+            Security.addProvider(new BouncyCastleProvider());
+        }
 
-      /*
-       * Creates a mock URLConnection not to make outside connections to
-       * de-reference the FOAF file for the tests.
-       */
-      URLStreamHandlerFactory mockStreamHandlerFactory = new URLStreamHandlerFactory() {
+        /*
+         * Creates a mock URLConnection not to make outside connections to
+         * de-reference the FOAF file for the tests.
+         */
+        URLStreamHandlerFactory mockStreamHandlerFactory = new URLStreamHandlerFactory() {
 
-         public URLStreamHandler createURLStreamHandler(String protocol) {
-            if ("http".equals(protocol) || "https".equals(protocol)) {
-               return new URLStreamHandler() {
-
-                  @Override
-                  protected URLConnection openConnection(URL u) throws IOException {
-                     return new HttpURLConnection(u) {
+            public URLStreamHandler createURLStreamHandler(String protocol) {
+                if ("http".equals(protocol) || "https".equals(protocol)) {
+                    return new URLStreamHandler() {
 
                         @Override
-                        public void disconnect() {
-                        }
+                        protected URLConnection openConnection(URL u) throws IOException {
+                            return new HttpURLConnection(u) {
 
-                        @Override
-                        public boolean usingProxy() {
-                           return false;
-                        }
+                                @Override
+                                public void disconnect() {
+                                }
 
-                        @Override
-                        public void connect() throws IOException {
-                        }
+                                @Override
+                                public boolean usingProxy() {
+                                    return false;
+                                }
 
-                        @Override
-                        public String getContentType() {
-                           return "application/rdf+xml";
-                        }
+                                @Override
+                                public void connect() throws IOException {
+                                }
 
-                        @Override
-                        public InputStream getInputStream() throws IOException {
-                           return DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
+                                @Override
+                                public String getContentType() {
+                                    return "application/rdf+xml";
+                                }
+
+                                @Override
+                                public InputStream getInputStream() throws IOException {
+                                    return DereferencingFoafSslVerifierTest.class
+                                            .getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
+                                }
+                            };
                         }
-                     };
-                  }
-               };
+                    };
+                }
+                return null;
             }
-            return null;
-         }
-      };
-      try {
-         URL.setURLStreamHandlerFactory(mockStreamHandlerFactory);
-      } catch (Throwable e) {
-      }
+        };
+        try {
+            URL.setURLStreamHandlerFactory(mockStreamHandlerFactory);
+        } catch (Throwable e) {
+        }
 
-      this.verifier = new DereferencingFoafSslVerifier();
+        this.verifier = new DereferencingFoafSslVerifier();
 
-      InputStreamReader certReader = new InputStreamReader(DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_CERT_FILENAME));
+        InputStreamReader certReader = new InputStreamReader(DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_CERT_FILENAME));
 
-      PEMReader pemReader = new PEMReader(certReader);
-      while (pemReader.ready()) {
-         Object pemObject = pemReader.readObject();
-         if (pemObject instanceof X509Certificate) {
-            x509Certificate = (X509Certificate) pemObject;
-            break;
-         } else {
-            throw new RuntimeException("Unknown type of PEM object: " + pemObject);
-         }
-      }
-      pemReader.close();
-   }
+        PEMReader pemReader = new PEMReader(certReader);
+        while (pemReader.ready()) {
+            Object pemObject = pemReader.readObject();
+            if (pemObject instanceof X509Certificate) {
+                x509Certificate = (X509Certificate) pemObject;
+                break;
+            } else {
+                throw new RuntimeException("Unknown type of PEM object: " + pemObject);
+            }
+        }
+        pemReader.close();
+    }
 
-   @Test
-   public void testGoodLocalFoafFile() throws Exception {
+    @Test
+    public void testGoodLocalFoafFile() throws Exception {
 
-      InputStream foafInputStream = DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_GOOD_FOAF_FILENAME);
 
-      try {
-         assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate.getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
-      } finally {
-         foafInputStream.close();
-      }
-   }
+        try {
+            assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
+        } finally {
+            foafInputStream.close();
+        }
+    }
 
-   @Test
-   public void testGoodLocalFoafXhtmlRDFaFile() throws Exception {
+    @Test
+    public void testGoodLocalFoafXhtmlRDFaFile() throws Exception {
 
-      InputStream foafInputStream = DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_GOOD_FOAF_XHTML_FILENAME);
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_GOOD_FOAF_XHTML_FILENAME);
 
-      try {
-         assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate.getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/xhtml+xml"));
-      } finally {
-         foafInputStream.close();
-      }
-   }
+        try {
+            assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/xhtml+xml"));
+        } finally {
+            foafInputStream.close();
+        }
+    }
 
-   @Test
-   public void testGoodLocalFoafHtmlRDFaFile() throws Exception {
+    @Test
+    public void testGoodLocalFoafHtmlRDFaFile() throws Exception {
 
-      InputStream foafInputStream = DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_GOOD_FOAF_HTML_FILENAME);
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_GOOD_FOAF_HTML_FILENAME);
 
-      try {
-         assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate.getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
-      } finally {
-         foafInputStream.close();
-      }
-   }
+        try {
+            assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
+        } finally {
+            foafInputStream.close();
+        }
+    }
 
-   @Test
-   public void testBadLocalFoafFile() throws Exception {
-      InputStream foafInputStream = DereferencingFoafSslVerifierTest.class.getResourceAsStream(TEST_WRONG_FOAF_FILENAME);
-      try {
-         assertNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate.getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
-      } finally {
-         foafInputStream.close();
-      }
-   }
+    @Test
+    public void testBadLocalFoafFile() throws Exception {
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream(TEST_WRONG_FOAF_FILENAME);
+        try {
+            assertNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "application/rdf+xml"));
+        } finally {
+            foafInputStream.close();
+        }
+    }
 
-   @Test
-   public void testRemoteFoafFile() throws Exception {
-      assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate.getPublicKey()));
-   }
+    @Test
+    public void testRemoteFoafFile() throws Exception {
+        assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                .getPublicKey(), this.x509Certificate.getNotBefore(), this.x509Certificate
+                .getNotAfter()));
+    }
 }
