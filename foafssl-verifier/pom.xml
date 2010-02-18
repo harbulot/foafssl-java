@@ -30,9 +30,17 @@
 	<dependencies>
 		<dependency>
 			<groupId>net.rootdev</groupId>
+			<artifactId>java-rdfa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>net.rootdev</groupId>
 			<artifactId>sesame-java-rdfa</artifactId>
-			<version>0.2-SNAPSHOT</version>
-			<type>jar</type>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>nu.validator.htmlparser</groupId>
+			<artifactId>htmlparser</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
