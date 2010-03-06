@@ -33,6 +33,7 @@ POSSIBILITY OF SUCH DAMAGE.
 package net.java.dev.sommer.foafssl.verifier;
 
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.URLConnection;
 import java.security.PublicKey;
 import java.util.logging.Level;
@@ -61,6 +62,9 @@ import net.java.dev.sommer.foafssl.principals.DereferencedFoafSslPrincipal;
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 
 import org.openrdf.OpenRDFException;
+import org.openrdf.model.BNode;
+import org.openrdf.model.Literal;
+import org.openrdf.model.Value;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
@@ -75,11 +79,13 @@ import org.openrdf.sail.memory.MemoryStore;
 /**
  * This class verifies FOAF+SSL certificates by dereferencing the FOAF file at
  * the given Web ID URI.
- * 
+ *
  * @author Henry Story.
  * @author Bruno Harbulot.
  */
 public class DereferencingFoafSslVerifier implements FoafSslVerifier {
+    final String cert = "http://www.w3.org/ns/auth/cert#";
+    final String xsd = "http://www.w3.org/2001/XMLSchema#";
 
     static transient Logger log = Logger.getLogger(DereferencingFoafSslVerifier.class.getName());
 
@@ -87,10 +93,9 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * Verifies an X.509 certificate built for FOAF+SSL and returns a Collection
      * of verified FoafSslPrincipals. The verification is done by getting the
      * FOAF file at the Web ID URI.
-     * 
-     * @param clientCert
-     *            an X.509 cerificate, expected to contain a FOAF+SSL Web ID in
-     *            the subject alternative name extension.
+     *
+     * @param clientCert an X.509 cerificate, expected to contain a FOAF+SSL Web ID in
+     *                   the subject alternative name extension.
      * @return a collection of verified Principals.
      * @throws org.openrdf.OpenRDFException
      * @throws java.io.IOException
@@ -115,26 +120,22 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     /**
      * Verifies a claimed Web ID and its public key against the public key
      * available by dereferencing this Web ID.
-     * 
-     * @param claimedIdUri
-     *            claimed Web ID.
-     * @param certPublicKey
-     *            public key provided in the X.509 certificate.
-     * @param notBeforeDate
-     *            date before which the certificate is not valid (although this
-     *            may not be null in an X.509 certificate, this may be null when
-     *            using this method).
-     * @param notAfterDate
-     *            date after which the certificate is not valid (although this
-     *            may not be null in an X.509 certificate, this may be null when
-     *            using this method).
+     *
+     * @param claimedIdUri  claimed Web ID.
+     * @param certPublicKey public key provided in the X.509 certificate.
+     * @param notBeforeDate date before which the certificate is not valid (although this
+     *                      may not be null in an X.509 certificate, this may be null when
+     *                      using this method).
+     * @param notAfterDate  date after which the certificate is not valid (although this
+     *                      may not be null in an X.509 certificate, this may be null when
+     *                      using this method).
      * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
      *         case of success, null otherwise.
      * @throws OpenRDFException
      * @throws IOException
      */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
-            PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate)
+                                                              PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate)
             throws OpenRDFException, IOException {
         return verifyByDereferencing(claimedIdUri, certPublicKey, notBeforeDate, notAfterDate,
                 new Date());
@@ -143,19 +144,15 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     /**
      * Verifies a claimed Web ID and its public key against the public key
      * available by dereferencing this Web ID.
-     * 
-     * @param claimedIdUri
-     *            claimed Web ID.
-     * @param certPublicKey
-     *            public key provided in the X.509 certificate.
-     * @param notBeforeDate
-     *            date before which the certificate is not valid (although this
-     *            may not be null in an X.509 certificate, this may be null when
-     *            using this method).
-     * @param notAfterDate
-     *            date after which the certificate is not valid (although this
-     *            may not be null in an X.509 certificate, this may be null when
-     *            using this method).
+     *
+     * @param claimedIdUri  claimed Web ID.
+     * @param certPublicKey public key provided in the X.509 certificate.
+     * @param notBeforeDate date before which the certificate is not valid (although this
+     *                      may not be null in an X.509 certificate, this may be null when
+     *                      using this method).
+     * @param notAfterDate  date after which the certificate is not valid (although this
+     *                      may not be null in an X.509 certificate, this may be null when
+     *                      using this method).
      * @param currentDate
      * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
      *         case of success, null otherwise.
@@ -163,7 +160,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * @throws IOException
      */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
-            PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate, Date currentDate)
+                                                              PublicKey certPublicKey, Date notBeforeDate, Date notAfterDate, Date currentDate)
             throws OpenRDFException, IOException {
         URL foafname = claimedIdUri.toURL();
         URLConnection conn = foafname.openConnection();
@@ -206,27 +203,22 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     /**
      * Verifies a claimed Web ID and its public key against the public key
      * available by dereferencing this Web ID.
-     * 
-     * @param claimedIdUri
-     *            claimed Web ID.
-     * @param certPublicKey
-     *            public key provided in the X.509 certificate.
-     * @param actualUrl
-     *            Actual URL of the FOAF document (perhaps different to URI if
-     *            redirections).
-     * @param foafDocInputStream
-     *            FOAF document input stream.
-     * @param foafMediaType
-     *            Media type of the FOAF document representation in the input
-     *            stream.
+     *
+     * @param claimedIdUri       claimed Web ID.
+     * @param certPublicKey      public key provided in the X.509 certificate.
+     * @param actualUrl          Actual URL of the FOAF document (perhaps different to URI if
+     *                           redirections).
+     * @param foafDocInputStream FOAF document input stream.
+     * @param foafMediaType      Media type of the FOAF document representation in the input
+     *                           stream.
      * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
      *         case of success, null otherwise.
      * @throws OpenRDFException
      * @throws IOException
      */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
-            PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
-            String foafMediaType) throws OpenRDFException, IOException {
+                                                              PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
+                                                              String foafMediaType) throws OpenRDFException, IOException {
         return verifyByDereferencing(claimedIdUri, certPublicKey, actualUrl, foafDocInputStream,
                 foafMediaType, false, null);
     }
@@ -234,32 +226,25 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     /**
      * Verifies a claimed Web ID and its public key against the public key
      * available by dereferencing this Web ID.
-     * 
-     * @param claimedIdUri
-     *            claimed Web ID.
-     * @param certPublicKey
-     *            public key provided in the X.509 certificate.
-     * @param actualUrl
-     *            Actual URL of the FOAF document (perhaps different to URI if
-     *            redirections).
-     * @param foafDocInputStream
-     *            FOAF document input stream.
-     * @param foafMediaType
-     *            Media type of the FOAF document representation in the input
-     *            stream.
-     * @param dereferencedSecurely
-     *            whether the FOAF document was dereferenced securely.
-     * @param foafServerCertificates
-     *            certificate chain of the server hosting the FOAF document, may
-     *            be null.
+     *
+     * @param claimedIdUri           claimed Web ID.
+     * @param certPublicKey          public key provided in the X.509 certificate.
+     * @param actualUrl              Actual URL of the FOAF document (perhaps different to URI if
+     *                               redirections).
+     * @param foafDocInputStream     FOAF document input stream.
+     * @param foafMediaType          Media type of the FOAF document representation in the input
+     *                               stream.
+     * @param dereferencedSecurely   whether the FOAF document was dereferenced securely.
+     * @param foafServerCertificates certificate chain of the server hosting the FOAF document, may
+     *                               be null.
      * @return a DereferencedFoafSslPrincipal built from the claimed Web ID in
      *         case of success, null otherwise.
      * @throws OpenRDFException
      * @throws IOException
      */
     public DereferencedFoafSslPrincipal verifyByDereferencing(URI claimedIdUri,
-            PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
-            String foafMediaType, boolean dereferencedSecurely, Certificate[] foafServerCertificates)
+                                                              PublicKey certPublicKey, URL actualUrl, InputStream foafDocInputStream,
+                                                              String foafMediaType, boolean dereferencedSecurely, Certificate[] foafServerCertificates)
             throws OpenRDFException, IOException {
         RDFFormat rdfFormat = RDFFormat.forMIMEType(foafMediaType);
 
@@ -279,11 +264,15 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             RSAPublicKey certRsakey = (RSAPublicKey) certPublicKey;
             TupleQuery query = rep.prepareTupleQuery(QueryLanguage.SPARQL,
                     "PREFIX cert: <http://www.w3.org/ns/auth/cert#>"
-                            + "PREFIX rsa: <http://www.w3.org/ns/auth/rsa#>" + "SELECT ?mod ?exp "
+                            + "PREFIX rsa: <http://www.w3.org/ns/auth/rsa#>"
+                            + "SELECT ?m ?e ?mod ?exp "
                             + "WHERE {" + "   ?sig cert:identity ?person ."
                             + "   ?sig a rsa:RSAPublicKey;"
-                            + "        rsa:modulus [ cert:hex ?mod ] ;"
-                            + "        rsa:public_exponent [ cert:decimal ?exp ] ." + "}");
+                            + "        rsa:modulus ?m ;"
+                            + "        rsa:public_exponent ?e ."
+                            + "   OPTIONAL { ?m cert:hex ?mod . }"
+                            + "   OPTIONAL { ?e cert:decimal ?exp . }"
+                            + "}");
             // TODO: allow optional different ways of encoding the
             // modulus and exponent integers
             // this would just require passing the relations and the
@@ -291,29 +280,65 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             query.setBinding("person", vf.createURI(claimedIdUri.toString()));
             TupleQueryResult answer = query.evaluate();
             while (answer.hasNext()) {
+                BigInteger modulus = null, exponent = null;
                 BindingSet binding = answer.next();
-                Binding value = binding.getBinding("mod");
-                if (value != null) {
-                    // check that the value and type match the one
-                    // on the signature
-                    String strval = cleanHex(value.getValue().stringValue());
-                    BigInteger foaf_modulus = new BigInteger(strval, 16);
-                    if (!foaf_modulus.equals(certRsakey.getModulus())) {
-                        continue;
-                    }
-                } else {
-                    continue;
-                }
 
-                value = binding.getBinding("exp");
+                //1. Find the modulus
+                Binding value = binding.getBinding("m");
                 if (value != null) {
-                    BigInteger exponent = new BigInteger(value.getValue().stringValue(), 10);
-                    if (!exponent.equals(certRsakey.getPublicExponent())) {
+                    Value mv = value.getValue();
+                    if (mv instanceof Literal) {
+                        Literal lm = (Literal) mv;
+                        if (lm.getDatatype().toString().equals(cert + "hex")) {
+                            String strval = cleanHex(value.getValue().stringValue());
+                            modulus = new BigInteger(strval, 16);
+                        } else {
+                            //it could be xsd integer datatype
+                        }
+                    } else if (mv instanceof BNode) {
+                        value = binding.getBinding("mod");
+                        if (value != null) {
+                            // check that the value and type match the one
+                            // on the signature
+                            String strval = cleanHex(value.getValue().stringValue());
+                            modulus = new BigInteger(strval, 16);
+                        }
+                    } //other options are a bit too weird for the moment
+
+                    if (modulus == null || !modulus.equals(certRsakey.getModulus())) {
                         continue;
                     }
-                } else {
-                    continue;
-                }
+                } else continue; //no modulus, so the rest won't matter
+
+                //2. find the exponent
+                value = binding.getBinding("e");
+                if (value != null) {
+                    Value ev = value.getValue();
+                    if (ev instanceof Literal) {
+                        Literal le = (Literal) ev;
+                        String type = le.getDatatype().toString();
+                        if (type.equals(cert + "decimal") || type.equals(cert + "int") ||
+                                type.equals(xsd + "integer") || type.equals(xsd + "int") ||
+                                type.equals(xsd + "nonNegativeInteger")) { //I will need to change the name of cert:decimal
+                            exponent = new BigInteger(value.getValue().stringValue().trim(), 10);
+                        } else if (type.equals(cert+"hex")) {
+                            String strval = cleanHex(value.getValue().stringValue());
+                            exponent = new BigInteger(strval, 16);
+                        } else {
+                            //it could be some other encoding - one should really write a special literal transformation class
+                        }
+                    } else if (ev instanceof BNode) {
+                        value = binding.getBinding("exp");
+                        if (value != null) {
+                            exponent = new BigInteger(value.getValue().stringValue(), 10);
+                        } else {
+                            continue;
+                        }
+                    }
+                    if ( exponent==null|| !exponent.equals(certRsakey.getPublicExponent())) {
+                        continue;
+                    }
+                } else continue; //no exponent!
 
                 // success!
                 return new DereferencedFoafSslPrincipal(claimedIdUri, dereferencedSecurely,
@@ -330,9 +355,8 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * Extracts the URIs in the subject alternative name extension of an X.509
      * certificate (perhaps others such as email addresses could also be
      * useful).
-     * 
-     * @param cert
-     *            X.509 certificate from which to extract the URIs.
+     *
+     * @param cert X.509 certificate from which to extract the URIs.
      * @return list of java.net.URIs built from the URIs in the subjectAltName
      *         extension.
      */
@@ -376,8 +400,8 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
         return answers;
     }
 
-    static final private char[] hexchars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
-            'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f' };
+    static final private char[] hexchars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+            'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f'};
 
     static {
         Arrays.sort(hexchars);
@@ -386,9 +410,8 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     /**
      * This takes any string and returns in order only those characters that are
      * part of a hex string
-     * 
-     * @param strval
-     *            any string
+     *
+     * @param strval any string
      * @return a pure hex string
      */
     private String cleanHex(String strval) {
