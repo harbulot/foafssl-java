@@ -20,11 +20,11 @@
 <body typeof="foaf:PersonalProfileDocument" about="">
 <span rel="foaf:primaryTopic" href="#me"/>
 
-<p>Here we test the idea where we just use cert:hex as a Datatype, and a allow a user to try xsd:int datatype.
+<p>Here we test the idea where we just use cert:hex as a Datatype, and a allow a user to try xsd:integer datatype.
     <pre>
     [] a rsa:RSAPublicKey
        cert:identity :me;
-       rsa:modulus "A4 61 53 90 92...."^^cert:hex;
+       rsa:modulus "A4:61:53:90...."^^cert:hex;
        rsa:public_exponent "65537"^^xsd:integer .
     </pre>
 </p>

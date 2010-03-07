@@ -5,7 +5,6 @@
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
       xmlns:owl="http://www.w3.org/2002/07/owl#"
       xmlns:rsa="http://www.w3.org/ns/auth/rsa#"
-      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
 <head>
     <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"/>
@@ -19,17 +18,16 @@
 
 <body typeof="foaf:PersonalProfileDocument" about="">
 <span rel="foaf:primaryTopic" href="#me"/>
-
-<p>Here we test the literal version, and make the hex somewhat arbitrary
-        [] a rsa:RSAPublicKey
+<p>Here we test the original method of doing things.
+    <pre>
+    [] a rsa:RSAPublicKey
        cert:identity :me;
-       rsa:modulus "A4☼61☼53☼90...."^^cert:hex;
-       rsa:public_exponent "65537"^^xsd:int .
+       rsa:modulus "A4 61 53 90 92...."^cert:hex;
+       rsa:public_exponent "65537"^cert:decimal .
+    </pre>
 </p>
 
-
 <div about="#me" id="contact-info">
-
     <h1 property="foaf:name">Henry Story</h1>
     You can call me from a landline at any one of the following numbers, whichever is most convenient for you:
     <ul>
@@ -44,11 +42,6 @@
     </ul>
     <b>Email:</b>
     <a rel="foaf:mbox" href="mailto:henry.story@bblfish.net">hjs@bblfish.net</a>
-    <br/>
-    <a href="http://bblfish.net/people/henry/card#me"><img alt="foaf logo" src="pix/foafTiny.gif"/></a><br/>
-    <a href="http://babelfish.altavista.com/translate.dyn?lin=en&amp;translate_me=yes">
-        translate this page</a>
-    <br rel="foaf:openid" href=""/>
 </div>
 
 <h2>My RSA Public Key</h2>
@@ -57,18 +50,20 @@
     <dt>WebId</dt>
     <dd href="#me" rel="cert:identity">My WebId</dd>
     <dt>Modulus (hexadecimal)</dt>
-    <dd property="rsa:modulus" datatype="cert:hex">
-        A4☼61☼53☼90☼92☼1B☼3D☼28☼B0☼5B☼40☼92☼80☼DB☼E6☼F3☼42☼83☼A9☼FE
-        D8☼92☼B6☼70☼E1☼11☼AA☼DD☼6C☼95☼1F☼58☼B1☼01☼BF☼1C☼1F☼D7☼B5☼BB
-        54☼93☼A9☼FA☼26☼9F☼F1☼E3☼81☼47☼47☼A2☼40☼98☼C3☼E0☼B2☼9B☼6D☼5A
-        21☼EE☼C6☼55☼E1☼A6☼08☼73☼80☼3A☼2B☼7E☼9A☼15☼8F☼25☼23☼9C☼04☼60
-        8B☼0A☼32☼ED☼9C☼26☼CE☼6C☼1C☼27☼41☼42☼62☼04☼B4☼35☼1D☼02☼63☼3D
-        5C☼9A☼6B☼F7☼E3☼87☼CD☼51☼4D☼93☼44☼5B☼37☼B4☼BB☼3E☼D8☼5A☼11☼47
-        39☼C8☼2E☼5E☼76☼9E☼C2☼77
+    <dd rel="rsa:modulus" href="#m1">
+        <pre property="cert:hex">
+        A4 61 53 90 92 1B 3D 28 B0 5B 40 92 80 DB E6 F3 42 83 A9 FE
+        D8 92 B6 70 E1 11 AA DD 6C 95 1F 58 B1 01 BF 1C 1F D7 B5 BB
+        54 93 A9 FA 26 9F F1 E3 81 47 47 A2 40 98 C3 E0 B2 9B 6D 5A
+        21 EE C6 55 E1 A6 08 73 80 3A 2B 7E 9A 15 8F 25 23 9C 04 60
+        8B 0A 32 ED 9C 26 CE 6C 1C 27 41 42 62 04 B4 35 1D 02 63 3D
+        5C 9A 6B F7 E3 87 CD 51 4D 93 44 5B 37 B4 BB 3E D8 5A 11 47
+        39 C8 2E 5E 76 9E C2 77
+        </pre>
     </dd>
     <dt>Exponent (decimal)</dt>
-    <dd property="rsa:public_exponent" datatype="cert:int">65537</dd>
+    <dd rel="rsa:public_exponent" href="#e"><span property="cert:decimal">65537</span></dd>
 </dl>
 
 </body>
-        </html>
+</html>

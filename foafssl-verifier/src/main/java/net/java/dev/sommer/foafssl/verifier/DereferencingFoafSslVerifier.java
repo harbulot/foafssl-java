@@ -33,7 +33,6 @@ POSSIBILITY OF SUCH DAMAGE.
 package net.java.dev.sommer.foafssl.verifier;
 
 import java.io.InputStream;
-import java.math.BigDecimal;
 import java.net.URLConnection;
 import java.security.PublicKey;
 import java.util.logging.Level;
@@ -62,10 +61,7 @@ import net.java.dev.sommer.foafssl.principals.DereferencedFoafSslPrincipal;
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.BNode;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
+import org.openrdf.model.*;
 import org.openrdf.query.Binding;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
@@ -295,7 +291,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
                         } else {
                             //it could be xsd integer datatype
                         }
-                    } else if (mv instanceof BNode) {
+                    } else if (mv instanceof Resource) {
                         value = binding.getBinding("mod");
                         if (value != null) {
                             // check that the value and type match the one
@@ -327,7 +323,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
                         } else {
                             //it could be some other encoding - one should really write a special literal transformation class
                         }
-                    } else if (ev instanceof BNode) {
+                    } else if (ev instanceof Resource) {
                         value = binding.getBinding("exp");
                         if (value != null) {
                             exponent = new BigInteger(value.getValue().stringValue(), 10);

@@ -211,9 +211,9 @@ public class DereferencingFoafSslVerifierTest {
     }
 
     @Test
-    public void testLocalBblfishFile() throws Exception {
+    public void testLocalBblfishFile_old() throws Exception {
         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
-                .getResourceAsStream("bblfish-foaf.xhtml");
+                .getResourceAsStream("bblfish-foaf-old.xhtml");
 
         try {
             assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
@@ -222,6 +222,20 @@ public class DereferencingFoafSslVerifierTest {
             foafInputStream.close();
         }
     }
+
+    @Test
+    public void testLocalBblfishFile_old2() throws Exception {
+        InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                .getResourceAsStream("bblfish-foaf-old-2.xhtml");
+
+        try {
+            assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                    .getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
+        } finally {
+            foafInputStream.close();
+        }
+    }
+
 
         @Test
     public void testLocalBblfishLiteraFile_1() throws Exception {
@@ -235,6 +249,8 @@ public class DereferencingFoafSslVerifierTest {
             foafInputStream.close();
         }
     }
+
+
 
     @Test
     public void testLocalBblfishLiteraFile_2() throws Exception {
