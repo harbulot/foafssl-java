@@ -300,4 +300,17 @@ public class DereferencingFoafSslVerifierTest {
         }
     }
 
+    public void testLocalBblfishLiteraFile_6() throws Exception {
+         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                 .getResourceAsStream("bblfish-foaf-literal-wrong.xhtml");
+
+         try {
+             assertNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                     .getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
+         } finally {
+             foafInputStream.close();
+         }
+     }
+
+
 }

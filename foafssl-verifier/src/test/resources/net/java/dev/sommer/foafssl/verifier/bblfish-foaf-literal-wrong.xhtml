@@ -1,0 +1,109 @@
+<!--
+  ~ New BSD license: http://opensource.org/licenses/bsd-license.php
+  ~
+  ~ Copyright (c) 2010
+  ~ Henry Story
+  ~ http://bblfish.net/
+  ~
+  ~ Redistribution and use in source and binary forms, with or without
+  ~ modification, are permitted provided that the following conditions are met:
+  ~
+  ~ - Redistributions of source code must retain the above copyright notice,
+  ~  this list of conditions and the following disclaimer.
+  ~ - Redistributions in binary form must reproduce the above copyright notice,
+  ~  this list of conditions and the following disclaimer in the documentation
+  ~  and/or other materials provided with the distribution.
+  ~ - Neither the name of Sun Microsystems, Inc. nor the names of its contributors
+  ~  may be used to endorse or promote products derived from this software
+  ~  without specific prior written permission.
+  ~
+  ~ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+  ~ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+  ~ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+  ~ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+  ~ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+  ~ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+  ~ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+  ~ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+  ~ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+  ~ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+  ~ POSSIBILITY OF SUCH DAMAGE.
+  -->
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:cert="http://www.w3.org/ns/auth/cert#"
+      xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      xmlns:owl="http://www.w3.org/2002/07/owl#"
+      xmlns:rsa="http://www.w3.org/ns/auth/rsa#"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
+      xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<head>
+    <meta http-equiv="CONTENT-TYPE" content="text/html; charset=utf-8"/>
+    <title>Henry's CV</title>
+    <link rel="icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon"/>
+    <link rel="openid2.provider openid.server" href="http://openid4.me/index.php"/>
+    <link rel="Stylesheet" href="styles/simple.css" type="text/css" media="screen"/>
+    <base href="http://foaf.example.net/bruno"/>
+</head>
+
+<body typeof="foaf:PersonalProfileDocument" about="">
+<span rel="foaf:primaryTopic" href="#me"/>
+
+<p>Here we test a broken html/rdfa datatype the xsd:int is missing because it is badly written out
+    It should use "property=" not "rel="
+    <pre>
+    [] a rsa:RSAPublicKey
+       cert:identity :me;
+       rsa:modulus "A4:61:53:90...."^^cert:hex;
+       rsa:public_exponent "65537"^^xsd:int .
+    </pre>
+</p>
+
+
+<div about="#me" id="contact-info">
+
+    <h1 property="foaf:name">Henry Story</h1>
+    You can call me from a landline at any one of the following numbers, whichever is most convenient for you:
+    <ul>
+        <li>French phone: <a rel="foaf:phone" href="tel:+33970448664">+33 9 70 44 86 64</a></li>
+        <li>US phone: <a rel="foaf:phone" href="tel:+15109315491">+1 510 931 5491</a></li>
+    </ul>
+    I am also available via a number of instant messaging platforms. Please send a short message when you attempt to
+    contact me via these platforms describing who you are. I may block you by mistake otherwise.
+    <ul>
+        <li>bblfish</li>
+        <li>Aol Instant Messenger: <span property="foaf:aimChatId">unbabelfish</span></li>
+    </ul>
+    <b>Email:</b>
+    <a rel="foaf:mbox" href="mailto:henry.story@bblfish.net">hjs@bblfish.net</a>
+    <br/>
+    <a href="http://bblfish.net/people/henry/card#me"><img alt="foaf logo" src="pix/foafTiny.gif"/></a><br/>
+    <a href="http://babelfish.altavista.com/translate.dyn?lin=en&amp;translate_me=yes">
+        translate this page</a>
+    <br rel="foaf:openid" href=""/>
+</div>
+
+<h2>My RSA Public Key</h2>
+
+<dl typeof="rsa:RSAPublicKey">
+    <dt>WebId</dt>
+    <dd href="#me" rel="cert:identity">My WebId</dd>
+    <dt>Modulus (hexadecimal)</dt>
+    <dd property="rsa:modulus" datatype="cert:hex">
+        A4:61:53:90:92:1B:3D:28:B0:5B:40:92:80:DB:E6:F3:42:83:A9:FE
+        D8:92:B6:70:E1:11:AA:DD:6C:95:1F:58:B1:01:BF:1C:1F:D7:B5:BB
+        54:93:A9:FA:26:9F:F1:E3:81:47:47:A2:40:98:C3:E0:B2:9B:6D:5A
+        21:EE:C6:55:E1:A6:08:73:80:3A:2B:7E:9A:15:8F:25:23:9C:04:60
+        8B:0A:32:ED:9C:26:CE:6C:1C:27:41:42:62:04:B4:35:1D:02:63:3D
+        5C:9A:6B:F7:E3:87:CD:51:4D:93:44:5B:37:B4:BB:3E:D8:5A:11:47
+        39:C8:2E:5E:76:9E:C2:77
+    </dd>
+    <dt>Exponent (decimal)</dt>
+    <dd rel="rsa:public_exponent" datatype="xsd:int">65537</dd>
+</dl>
+
+</body>
+        </html>
