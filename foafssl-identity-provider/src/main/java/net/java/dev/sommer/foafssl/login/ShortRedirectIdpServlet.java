@@ -178,8 +178,6 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
      *            used)
      * @param simpleRequestParam
      *            the service that the response is sent to
-     * @param privKey
-     *            the private key used by this service
      * @return the URL of the response with the webid, timestamp appended and
      *         signed
      * @throws NoSuchAlgorithmException
@@ -224,10 +222,8 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
     /**
      * Redirect request to the given url
      * 
-     * @param the
-     *            response
-     * @param respUrl
-     *            the response Url to redirect to
+     * @param response
+     * @param respUrl the response Url to redirect to
      */
     private void redirect(HttpServletResponse response, String respUrl) {
         response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);

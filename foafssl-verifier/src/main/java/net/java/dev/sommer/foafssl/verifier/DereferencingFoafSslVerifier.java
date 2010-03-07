@@ -60,6 +60,7 @@ import javax.net.ssl.HttpsURLConnection;
 import net.java.dev.sommer.foafssl.principals.DereferencedFoafSslPrincipal;
 import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 
+import net.java.dev.sommer.foafssl.util.SafeInputStream;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.*;
 import org.openrdf.query.Binding;
@@ -84,6 +85,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     final static String xsd = "http://www.w3.org/2001/XMLSchema#";
 
     static transient Logger log = Logger.getLogger(DereferencingFoafSslVerifier.class.getName());
+    private static final int MAX_LENGTH = 256 * 1024; // 1/4 MB max length of foaf files read.
 
     /**
      * Verifies an X.509 certificate built for FOAF+SSL and returns a Collection
@@ -255,14 +257,15 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
 
         // to be better
         org.openrdf.model.URI foafdocUri = vf.createURI(base.toString());
-        rep.add(foafDocInputStream, actualUrl.toString(), rdfFormat, foafdocUri);
+        rep.add(new SafeInputStream(foafDocInputStream, MAX_LENGTH), actualUrl.toString(), rdfFormat, foafdocUri);
         if (certPublicKey instanceof RSAPublicKey) {
             RSAPublicKey certRsakey = (RSAPublicKey) certPublicKey;
             TupleQuery query = rep.prepareTupleQuery(QueryLanguage.SPARQL,
                     "PREFIX cert: <http://www.w3.org/ns/auth/cert#>"
                             + "PREFIX rsa: <http://www.w3.org/ns/auth/rsa#>"
                             + "SELECT ?m ?e ?mod ?exp "
-                            + "WHERE {" + "   ?sig cert:identity ?person ."
+                            + "WHERE { "
+                            + "   ?sig cert:identity ?person ."
                             + "   ?sig a rsa:RSAPublicKey;"
                             + "        rsa:modulus ?m ;"
                             + "        rsa:public_exponent ?e ."
@@ -280,15 +283,15 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
 
                 //1. find the exponent
                 BigInteger exp = toInteger(bindingSet.getBinding("e"), cert + "decimal", bindingSet.getBinding("exp"));
-                if (exp== null || !exp.equals(certRsakey.getPublicExponent())) {
+                if (exp == null || !exp.equals(certRsakey.getPublicExponent())) {
                     continue;
                 }
 
                 //2. Find the modulus
                 BigInteger mod = toInteger(bindingSet.getBinding("m"), cert + "hex", bindingSet.getBinding("mod"));
-                if (mod== null || !mod.equals(certRsakey.getModulus())) {
-                     continue;
-                 }
+                if (mod == null || !mod.equals(certRsakey.getModulus())) {
+                    continue;
+                }
 
                 // success!
                 return new DereferencedFoafSslPrincipal(claimedIdUri, dereferencedSecurely,
