@@ -250,8 +250,6 @@ public class DereferencingFoafSslVerifierTest {
         }
     }
 
-
-
     @Test
     public void testLocalBblfishLiteraFile_2() throws Exception {
         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class

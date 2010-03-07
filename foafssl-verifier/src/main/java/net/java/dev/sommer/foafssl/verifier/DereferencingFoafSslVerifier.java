@@ -80,8 +80,8 @@ import org.openrdf.sail.memory.MemoryStore;
  * @author Bruno Harbulot.
  */
 public class DereferencingFoafSslVerifier implements FoafSslVerifier {
-    final String cert = "http://www.w3.org/ns/auth/cert#";
-    final String xsd = "http://www.w3.org/2001/XMLSchema#";
+    final static String cert = "http://www.w3.org/ns/auth/cert#";
+    final static String xsd = "http://www.w3.org/2001/XMLSchema#";
 
     static transient Logger log = Logger.getLogger(DereferencingFoafSslVerifier.class.getName());
 
@@ -276,65 +276,19 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
             query.setBinding("person", vf.createURI(claimedIdUri.toString()));
             TupleQueryResult answer = query.evaluate();
             while (answer.hasNext()) {
-                BigInteger modulus = null, exponent = null;
-                BindingSet binding = answer.next();
+                BindingSet bindingSet = answer.next();
 
-                //1. Find the modulus
-                Binding value = binding.getBinding("m");
-                if (value != null) {
-                    Value mv = value.getValue();
-                    if (mv instanceof Literal) {
-                        Literal lm = (Literal) mv;
-                        if (lm.getDatatype().toString().equals(cert + "hex")) {
-                            String strval = cleanHex(value.getValue().stringValue());
-                            modulus = new BigInteger(strval, 16);
-                        } else {
-                            //it could be xsd integer datatype
-                        }
-                    } else if (mv instanceof Resource) {
-                        value = binding.getBinding("mod");
-                        if (value != null) {
-                            // check that the value and type match the one
-                            // on the signature
-                            String strval = cleanHex(value.getValue().stringValue());
-                            modulus = new BigInteger(strval, 16);
-                        }
-                    } //other options are a bit too weird for the moment
+                //1. find the exponent
+                BigInteger exp = toInteger(bindingSet.getBinding("e"), cert + "decimal", bindingSet.getBinding("exp"));
+                if (exp== null || !exp.equals(certRsakey.getPublicExponent())) {
+                    continue;
+                }
 
-                    if (modulus == null || !modulus.equals(certRsakey.getModulus())) {
-                        continue;
-                    }
-                } else continue; //no modulus, so the rest won't matter
-
-                //2. find the exponent
-                value = binding.getBinding("e");
-                if (value != null) {
-                    Value ev = value.getValue();
-                    if (ev instanceof Literal) {
-                        Literal le = (Literal) ev;
-                        String type = le.getDatatype().toString();
-                        if (type.equals(cert + "decimal") || type.equals(cert + "int") ||
-                                type.equals(xsd + "integer") || type.equals(xsd + "int") ||
-                                type.equals(xsd + "nonNegativeInteger")) { //I will need to change the name of cert:decimal
-                            exponent = new BigInteger(value.getValue().stringValue().trim(), 10);
-                        } else if (type.equals(cert+"hex")) {
-                            String strval = cleanHex(value.getValue().stringValue());
-                            exponent = new BigInteger(strval, 16);
-                        } else {
-                            //it could be some other encoding - one should really write a special literal transformation class
-                        }
-                    } else if (ev instanceof Resource) {
-                        value = binding.getBinding("exp");
-                        if (value != null) {
-                            exponent = new BigInteger(value.getValue().stringValue(), 10);
-                        } else {
-                            continue;
-                        }
-                    }
-                    if ( exponent==null|| !exponent.equals(certRsakey.getPublicExponent())) {
-                        continue;
-                    }
-                } else continue; //no exponent!
+                //2. Find the modulus
+                BigInteger mod = toInteger(bindingSet.getBinding("m"), cert + "hex", bindingSet.getBinding("mod"));
+                if (mod== null || !mod.equals(certRsakey.getModulus())) {
+                     continue;
+                 }
 
                 // success!
                 return new DereferencedFoafSslPrincipal(claimedIdUri, dereferencedSecurely,
@@ -348,6 +302,58 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
     }
 
     /**
+     * Transform an RDF representation of a number into a BigInteger
+     * <p/>
+     * Passes a statement as two bindings and the relation between them.
+     * The subject is the number.
+     * If num is already a literal number, that is returned, otherwise if
+     * enough information from the relation to optstr exists, that is used.
+     *
+     * @param num    the number node
+     * @param optRel name of the relation to the literal
+     * @param optstr the literal representation if it exists
+     * @return the big integer that num represents, or null if undetermined
+     */
+    static BigInteger toInteger(Binding num, String optRel, Binding optstr) {
+        if (null == num) return null;
+        Value numVal = num.getValue();
+        if (numVal instanceof Literal) {  //we do in fact have "ddd"^^type
+            Literal ln = (Literal) numVal;
+            String type = ln.getDatatype().toString();
+            return toInteger_helper(ln.getLabel(), type);
+        } else if (numVal instanceof Resource) { //we had _:n type "ddd" .
+            Value strVal = optstr.getValue();
+            if (strVal != null && strVal instanceof Literal) {
+                Literal ls = (Literal) strVal;
+                return toInteger_helper(ls.getLabel(), optRel);
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This transforms a literal into a number if possible
+     * ie, it returns the BigInteger of "ddd"^^type
+     *
+     * @param num  the string representation of the number
+     * @param type the type of the string representation
+     * @return the number
+     */
+    private static BigInteger toInteger_helper(String num, String type) {
+        if (type.equals(cert + "decimal") || type.equals(cert + "int") ||
+                type.equals(xsd + "integer") || type.equals(xsd + "int") ||
+                type.equals(xsd + "nonNegativeInteger")) { //cert:decimal is deprecated
+            return new BigInteger(num.trim(), 10);
+        } else if (type.equals(cert + "hex")) {
+            String strval = cleanHex(num);
+            return new BigInteger(strval, 16);
+        } else {
+            //it could be some other encoding - one should really write a special literal transformation class
+        }
+        return null;
+    }
+
+    /**
      * Extracts the URIs in the subject alternative name extension of an X.509
      * certificate (perhaps others such as email addresses could also be
      * useful).
@@ -356,7 +362,9 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * @return list of java.net.URIs built from the URIs in the subjectAltName
      *         extension.
      */
-    public static List<URI> getAlternativeURIName(X509Certificate cert) {
+    public static List<URI> getAlternativeURIName
+            (X509Certificate
+                    cert) {
         ArrayList<URI> answers = new ArrayList<URI>();
         try {
             if (cert == null) {
@@ -410,7 +418,8 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
      * @param strval any string
      * @return a pure hex string
      */
-    private String cleanHex(String strval) {
+
+    private static String cleanHex(String strval) {
         StringBuffer cleanval = new StringBuffer();
         for (char c : strval.toCharArray()) {
             if (Arrays.binarySearch(hexchars, c) >= 0) {
