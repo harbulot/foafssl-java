@@ -18,12 +18,15 @@
 
 <body typeof="foaf:PersonalProfileDocument" about="">
 <span rel="foaf:primaryTopic" href="#me"/>
-<p>Here we test the original method of doing things.
+<p>Here we test the original method of doing things, but for people who like to give URLs to their numbers.
     <pre>
-    [] a rsa:RSAPublicKey
-       cert:identity :me;
-       rsa:modulus "A4 61 53 90 92...."^cert:hex;
-       rsa:public_exponent "65537"^cert:decimal .
+   [] a rsa:RSAPublicKey ;
+    cert:identity :me ;
+    rsa:modulus :m ;
+    rsa:public_exponent :e .
+
+    :m cert:hex "A4 61 53 90 92 ..." .
+    :e  cert:decimal "65537" .
     </pre>
 </p>
 
