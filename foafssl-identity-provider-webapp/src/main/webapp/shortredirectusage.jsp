@@ -74,8 +74,9 @@ the above variables have the following meanings:
 <p>In case of error the service gets redirected to <pre>$authreqissuer?error=$code</pre>Where
 $code can be either one of
 <ul>
-	<li><code>nocert</code>: when the client has no cert. This allows
-	the SP to propose the client other authentication mechanisms.
+	<li><code>nocert</code>: when the client has no cert.
+	<li><code>noVerifiedWebId</code>: no verified WebId was found in the certificate
+	<li><code>noWebId</code>: todo: show this error when there are no webids at all
 	<li><code>IdPError</code>: for some error in the IdP setup. Warn
 	the IdP administrator!
 	<li>other messages, not standardised yet</li>

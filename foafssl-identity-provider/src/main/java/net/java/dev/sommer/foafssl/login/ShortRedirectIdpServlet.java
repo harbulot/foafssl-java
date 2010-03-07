@@ -165,7 +165,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
                         redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
                     }
                 } else {
-                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noWebID");
+                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noVerifiedWebID");
                 }
                 return;
             }
