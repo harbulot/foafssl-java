@@ -35,6 +35,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:cert="http://www.w3.org/ns/auth/cert#"
       xmlns:foaf="http://xmlns.com/foaf/0.1/"
+      xmlns:xsd="http://www.w3.org/2001/XMLSchema#"
       xmlns:owl="http://www.w3.org/2002/07/owl#"
       xmlns:rsa="http://www.w3.org/ns/auth/rsa#"
       xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -50,12 +51,13 @@
 
 <body typeof="foaf:PersonalProfileDocument" about="">
 <span rel="foaf:primaryTopic" href="#me"/>
-<p>Here we test the original method of doing things.
+<p>Here we test the original method of doing things, but with an xsd:string that pops in
+    (I found that in rdfa sometimes one really needs to add those to remove the @en language tags appearing)
     <pre>
     [] a rsa:RSAPublicKey
        cert:identity :me;
-       rsa:modulus "A4 61 53 90 92...."^cert:hex;
-       rsa:public_exponent "65537"^cert:decimal .
+       rsa:modulus [ cert:hex "A4 61 53 90 92...."^^xsd:string ];
+       rsa:public_exponent [ cert:decimal "65537"^^xsd:string ] .
     </pre>
 </p>
 
@@ -83,7 +85,7 @@
     <dd href="#me" rel="cert:identity">My WebId</dd>
     <dt>Modulus (hexadecimal)</dt>
     <dd rel="rsa:modulus">
-        <pre property="cert:hex">
+        <pre property="cert:hex" datatype="xsd:string">
         A4 61 53 90 92 1B 3D 28 B0 5B 40 92 80 DB E6 F3 42 83 A9 FE
         D8 92 B6 70 E1 11 AA DD 6C 95 1F 58 B1 01 BF 1C 1F D7 B5 BB
         54 93 A9 FA 26 9F F1 E3 81 47 47 A2 40 98 C3 E0 B2 9B 6D 5A
@@ -94,7 +96,7 @@
         </pre>
     </dd>
     <dt>Exponent (decimal)</dt>
-    <dd rel="rsa:public_exponent"><span property="cert:decimal">65537</span></dd>
+    <dd rel="rsa:public_exponent"><span property="cert:decimal" datatype="xsd:string">65537</span></dd>
 </dl>
 
 </body>

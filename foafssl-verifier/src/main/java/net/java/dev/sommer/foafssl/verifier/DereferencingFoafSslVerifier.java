@@ -71,6 +71,7 @@ import org.openrdf.query.TupleQueryResult;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.turtle.TurtleWriter;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
@@ -258,6 +259,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
         // to be better
         org.openrdf.model.URI foafdocUri = vf.createURI(base.toString());
         rep.add(new SafeInputStream(foafDocInputStream, MAX_LENGTH), actualUrl.toString(), rdfFormat, foafdocUri);
+        rep.export(new TurtleWriter(System.out));
         if (certPublicKey instanceof RSAPublicKey) {
             RSAPublicKey certRsakey = (RSAPublicKey) certPublicKey;
             TupleQuery query = rep.prepareTupleQuery(QueryLanguage.SPARQL,

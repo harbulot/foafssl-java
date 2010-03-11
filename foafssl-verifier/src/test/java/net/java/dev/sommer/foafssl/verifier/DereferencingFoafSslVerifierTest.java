@@ -236,6 +236,33 @@ public class DereferencingFoafSslVerifierTest {
         }
     }
 
+    @Test
+     public void testLocalBblfishFile_old3() throws Exception {
+         InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                 .getResourceAsStream("bblfish-foaf-old-3.xhtml");
+
+         try {
+             assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                     .getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
+         } finally {
+             foafInputStream.close();
+         }
+     }
+
+    @Test
+      public void testLocalBblfishFile_old4() throws Exception {
+          InputStream foafInputStream = DereferencingFoafSslVerifierTest.class
+                  .getResourceAsStream("bblfish-foaf-old-4.xhtml");
+
+          try {
+              assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
+                      .getPublicKey(), TEST_FOAF_URL, foafInputStream, "text/html"));
+          } finally {
+              foafInputStream.close();
+          }
+      }
+
+
 
         @Test
     public void testLocalBblfishLiteraFile_1() throws Exception {
