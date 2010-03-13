@@ -259,7 +259,6 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
         // to be better
         org.openrdf.model.URI foafdocUri = vf.createURI(base.toString());
         rep.add(new SafeInputStream(foafDocInputStream, MAX_LENGTH), actualUrl.toString(), rdfFormat, foafdocUri);
-        rep.export(new TurtleWriter(System.out));
         if (certPublicKey instanceof RSAPublicKey) {
             RSAPublicKey certRsakey = (RSAPublicKey) certPublicKey;
             TupleQuery query = rep.prepareTupleQuery(QueryLanguage.SPARQL,
@@ -267,8 +266,7 @@ public class DereferencingFoafSslVerifier implements FoafSslVerifier {
                             + "PREFIX rsa: <http://www.w3.org/ns/auth/rsa#>"
                             + "SELECT ?m ?e ?mod ?exp "
                             + "WHERE { "
-                            + "   ?sig cert:identity ?person ."
-                            + "   ?sig a rsa:RSAPublicKey;"
+                            + "   [] cert:identity ?person ;"
                             + "        rsa:modulus ?m ;"
                             + "        rsa:public_exponent ?e ."
                             + "   OPTIONAL { ?m cert:hex ?mod . }"
