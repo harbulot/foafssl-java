@@ -53,7 +53,7 @@ import javax.naming.NamingException;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
-import net.java.dev.sommer.foafssl.verifier.DereferencingFoafSslVerifier;
+import net.java.dev.sommer.foafssl.verifier.SesameFoafSslVerifier;
 import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
 
 /**
@@ -89,7 +89,7 @@ public abstract class AbstractIdpServlet extends HttpServlet {
     public final static String SIGNING_CERT_REQATTR = "net.java.dev.sommer.foafssl.login.signing_cert";
     public final static String SIGNING_PUBKEY_REQATTR = "net.java.dev.sommer.foafssl.login.signing_pubkey";
 
-    protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new DereferencingFoafSslVerifier();
+    protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new SesameFoafSslVerifier();
 
     protected volatile PrivateKey privateKey = null;
     protected volatile PublicKey publicKey = null;

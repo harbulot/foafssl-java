@@ -54,7 +54,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
+import net.java.dev.sommer.foafssl.principals.WebIdClaim;
 
 import org.bouncycastle.util.encoders.Base64;
 
@@ -120,7 +120,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         request.setAttribute(AbstractIdpServlet.SIGNING_CERT_REQATTR, certificate);
         request.setAttribute(AbstractIdpServlet.SIGNING_PUBKEY_REQATTR, publicKey);
 
-        Collection<? extends FoafSslPrincipal> verifiedWebIDs = null;
+        Collection<? extends WebIdClaim> verifiedWebIDs = null;
 
         String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
 
@@ -193,7 +193,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
      * @throws SignatureException
      */
 
-    private String createSignedResponse(Collection<? extends FoafSslPrincipal> verifiedWebIDs,
+    private String createSignedResponse(Collection<? extends WebIdClaim> verifiedWebIDs,
                                         String simpleRequestParam) throws NoSuchAlgorithmException,
             UnsupportedEncodingException, InvalidKeyException, SignatureException {
         /*
@@ -210,7 +210,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             throw new NoSuchAlgorithmException("Unsupported key algorithm type.");
         }
 
-        URI webId = verifiedWebIDs.iterator().next().getUri();
+        URI webId = verifiedWebIDs.iterator().next().getWebid();
         authnResp += "?" + WEBID_PARAMNAME + "="
                 + URLEncoder.encode(webId.toASCIIString(), "UTF-8");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

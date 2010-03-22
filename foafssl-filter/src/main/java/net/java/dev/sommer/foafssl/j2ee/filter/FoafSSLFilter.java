@@ -12,8 +12,9 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
+import net.java.dev.sommer.foafssl.principals.WebIdClaim;
 import net.java.dev.sommer.foafssl.verifier.*;
-import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
 
 /**
  * Hello world!
@@ -29,10 +30,10 @@ public class FoafSSLFilter implements Filter {
 
     public void doFilter(ServletRequest req, ServletResponse resp, FilterChain chain)
             throws IOException, ServletException {
-        DereferencingFoafSslVerifier verif = new DereferencingFoafSslVerifier();
+        SesameFoafSslVerifier verif = new SesameFoafSslVerifier();
         X509Certificate[] certs = (X509Certificate[]) req
                 .getAttribute("javax.servlet.request.X509Certificate");
-        Collection<? extends FoafSslPrincipal> pls;
+        Collection<? extends WebIdClaim> pls;
         try {
             pls = verif.verifyFoafSslCertificate(certs[0]);
             if (pls == null || pls.size() == 0) {

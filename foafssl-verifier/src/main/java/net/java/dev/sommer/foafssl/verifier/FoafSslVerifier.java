@@ -36,7 +36,7 @@ import java.security.cert.X509Certificate;
 import java.io.IOException;
 import java.util.Collection;
 
-import net.java.dev.sommer.foafssl.principals.FoafSslPrincipal;
+import net.java.dev.sommer.foafssl.principals.WebIdClaim;
 
 import org.openrdf.OpenRDFException;
 
@@ -45,18 +45,26 @@ import org.openrdf.OpenRDFException;
  * 
  * @author Bruno Harbulot.
  */
-public interface FoafSslVerifier {
+public abstract class FoafSslVerifier {
+    //of course this should be created by lookup not here in the code
+    static SesameFoafSslVerifier verifier = new SesameFoafSslVerifier();
+
     /**
-     * Verifies an X.509 certificate built for FOAF+SSL and returns a Collection
-     * of verified FoafSslPrincipals.
-     * 
-     * @param clientCert
-     *            an X.509 cerificate, expected to contain a FOAF+SSL Web ID in
-     *            the subject alternative name extension.
-     * @return a collection of verified Principals.
-     * @throws org.openrdf.OpenRDFException
-     * @throws java.io.IOException
+     * Verifies a WebId using foaf+ssl
+     *
+     * @param webid a Web ID claim
+     * @return true if verified
      */
-    public abstract Collection<? extends FoafSslPrincipal> verifyFoafSslCertificate(
-            X509Certificate clientCert) throws OpenRDFException, IOException;
+    public abstract boolean verify(WebIdClaim webid);
+
+
+
+    /**
+     * Factory method for constructing a verifier. Can construct a number of implementations
+     * @return
+     */
+    static public FoafSslVerifier getVerifier() {
+        return verifier;
+    }
+
 }

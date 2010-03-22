@@ -46,6 +46,7 @@ public class SafeInputStream extends FilterInputStream {
     final private int maxInput;
     int read = 0;
     int pointer;
+    boolean cutshort = false;
 
     /**
      * Wrap an input stream from which no more than maxInput will be read
@@ -60,13 +61,19 @@ public class SafeInputStream extends FilterInputStream {
 
     @Override
     public int read() throws IOException {
-        if (++read > maxInput) return -1;
+        if (++read > maxInput) {
+            cutshort = true;
+            return -1;
+        }
         return super.read();
     }
 
     @Override
     public int read(byte[] b, int off, int len) throws IOException {
-    if (read >= maxInput) return -1;
+        if (read >= maxInput) {
+            cutshort = true;
+            return -1;
+        }
         len = Math.min(len, maxInput - read);
         int r = super.read(b, off, len);
         read += r;
@@ -120,5 +127,20 @@ public class SafeInputStream extends FilterInputStream {
         }
     }
 
+    /**
+     * This wrapped input stream was cut off before the end
+     *
+     * @return
+     */
+    public boolean wasCutShort() {
+        return cutshort;
+    }
 
+    /**
+     *
+     * @return the maximum input allowed on this stream
+     */
+    public int getMax() {
+        return maxInput;
+    }
 }

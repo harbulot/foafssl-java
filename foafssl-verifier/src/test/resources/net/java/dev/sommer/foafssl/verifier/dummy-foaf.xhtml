@@ -1,3 +1,5 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML+RDFa 1.0//EN"
+  "http://www.w3.org/MarkUp/DTD/xhtml-rdfa-1.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" 
   xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
@@ -8,20 +10,16 @@
 >
     <head profile="http://ns.inria.fr/grddl/rdfa/">
         <title>RDFa foaf+ssl test page</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=utf-8"></meta>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     </head>
     <body>
         <h1>RDFa foaf+ssl test page</h1>
         <div about="#me" typeof="foaf:Person">
             <p>My name is
                 <span property="foaf:name">Bruno Harbulot</span>. My home page is <a rel="foaf:homepage" href="http://www.harbulot.com/">here</a>.
-                I am interested in a number of topics:
-                <ul><li> <a rel="foaf:interest" href="http://esw.w3.org/topic/foaf+ssl">foaf+ssl</a>. 
-                <li> <a rel="foaf:interest" href="http://java.net">Java programming</a>
-                </ul>
-                <p>
-                This page contains RDFa markup and
+                I have been working on <a rel="foaf:interest" href="http://esw.w3.org/topic/foaf+ssl">foaf+ssl</a>. This page contains RDFa markup and
                 can be used as a foaf+ssl foaf file.
+            </p>
         </div>
         <div about="#cert" typeof="rsa:RSAPublicKey">
             <div rel="cert:identity" href="#me"></div>
