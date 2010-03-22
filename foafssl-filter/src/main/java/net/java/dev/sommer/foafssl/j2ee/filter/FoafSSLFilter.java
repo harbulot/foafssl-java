@@ -14,11 +14,11 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
 import net.java.dev.sommer.foafssl.principals.WebIdClaim;
+import net.java.dev.sommer.foafssl.principals.X509Claim;
 import net.java.dev.sommer.foafssl.verifier.*;
 
 /**
  * Hello world!
- * 
  */
 public class FoafSSLFilter implements Filter {
 
@@ -33,12 +33,15 @@ public class FoafSSLFilter implements Filter {
         SesameFoafSslVerifier verif = new SesameFoafSslVerifier();
         X509Certificate[] certs = (X509Certificate[]) req
                 .getAttribute("javax.servlet.request.X509Certificate");
-        Collection<? extends WebIdClaim> pls;
+        Collection<? extends WebIdClaim> pls=null;
         try {
-            pls = verif.verifyFoafSslCertificate(certs[0]);
-            if (pls == null || pls.size() == 0) {
-                resp.getOutputStream().write("No foaf+ssl certificates".getBytes());
-                return;
+            X509Claim x509Claim = new X509Claim(certs[0]);
+            if (x509Claim.verify()) {
+                pls = x509Claim.getVerified();
+                if (pls == null || pls.size() == 0) {
+                    resp.getOutputStream().write("No foaf+ssl certificates".getBytes());
+                    return;
+                }
             }
         } catch (Exception ex) {
             Logger.getLogger(FoafSSLFilter.class.getName()).log(Level.SEVERE, null, ex);

@@ -34,7 +34,7 @@ package net.java.dev.sommer.foafssl.verifier;
 
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.cache.MemoryGraphCache;
-import net.java.dev.sommer.foafssl.principals.WebIdClaim;
+import net.java.dev.sommer.foafssl.keygen.CertCreator;
 import net.java.dev.sommer.foafssl.principals.X509Claim;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
@@ -85,19 +85,6 @@ public class X509ClaimTest {
         } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-
-        /*
-         * Creates a mock URLConnection not to make outside connections to
-         * de-reference the FOAF file for the tests.
-         * This can only be created once per JVM, so this is a little problematic
-         */
-
-//         try {
-//             URL.setURLStreamHandlerFactory(mockStreamHandlerFactory = new HackableStreamHandlerFactory());
-//         } catch (Throwable e) {
-//             throw new Error("The tests would wrongly succeed",e);
-//         }
-
     }
 
     @Before

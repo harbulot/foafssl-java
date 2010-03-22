@@ -64,9 +64,9 @@ import java.util.logging.Logger;
  */
 public class X509Claim {
     X509Certificate certClaim;
-    LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
-    List<WebIdClaim> verified = new LinkedList<WebIdClaim>();
-    List<WebIdClaim> problematic = new LinkedList<WebIdClaim>();
+    private LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
+    private List<WebIdClaim> verified = new LinkedList<WebIdClaim>();
+    private List<WebIdClaim> problematic = new LinkedList<WebIdClaim>();
     static transient Logger log = Logger.getLogger(X509Claim.class.getName());
 
 
@@ -77,7 +77,7 @@ public class X509Claim {
 
     public boolean verify() {
         if (!isCurrent()) {
-           problemDescription.add(new Severe("Certificate is out of date"));
+           getProblemDescription().add(new Severe("Certificate is out of date"));
             return false;
            //todo: perhaps that should be optional
         }
@@ -87,12 +87,12 @@ public class X509Claim {
             WebIdClaim webid = new WebIdClaim(candidateUri,certClaim.getPublicKey());
             boolean ok = webid.verify();
             if (ok) {
-                verified.add(webid);
+                getVerified().add(webid);
             } else {
-                problematic.add(webid);
+                getProblematic().add(webid);
             }
         }
-        return verified.size()>0;
+        return getVerified().size()>0;
     }
 
     /**
@@ -112,6 +112,7 @@ public class X509Claim {
         }
         return true;
     }
+
 
 
        /**
@@ -163,4 +164,15 @@ public class X509Claim {
         return answers;
     }
 
+    public LinkedList<Throwable> getProblemDescription() {
+        return problemDescription;
+    }
+
+    public List<WebIdClaim> getVerified() {
+        return verified;
+    }
+
+    public List<WebIdClaim> getProblematic() {
+        return problematic;
+    }
 }

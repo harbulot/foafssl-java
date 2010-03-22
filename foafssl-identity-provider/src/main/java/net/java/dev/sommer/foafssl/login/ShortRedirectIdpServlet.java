@@ -42,6 +42,8 @@ import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -56,6 +58,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.java.dev.sommer.foafssl.principals.WebIdClaim;
 
+import net.java.dev.sommer.foafssl.principals.X509Claim;
 import org.bouncycastle.util.encoders.Base64;
 
 /**
@@ -120,8 +123,6 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         request.setAttribute(AbstractIdpServlet.SIGNING_CERT_REQATTR, certificate);
         request.setAttribute(AbstractIdpServlet.SIGNING_PUBKEY_REQATTR, publicKey);
 
-        Collection<? extends WebIdClaim> verifiedWebIDs = null;
-
         String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
 
         /*
@@ -130,50 +131,54 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         X509Certificate[] certificates = (X509Certificate[]) request
                 .getAttribute("javax.servlet.request.X509Certificate");
 
+        X509Claim x509Claim = null;
+
         if (certificates == null || certificates.length == 0) {
             if (replyTo != null) {
                 redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=nocert");
                 return;
             }
         } else {
-            X509Certificate foafSslCertificate = certificates[0]; //TODO: what about the other certs? should one iterate?
-            try {
-                verifiedWebIDs = FOAF_SSL_VERIFIER.verifyFoafSslCertificate(foafSslCertificate);
-            } catch (Exception e) {
+            x509Claim = new X509Claim(certificates[0]);//TODO: what about the other certs? should one iterate?
+            if (x509Claim.verify()) {
                 if (replyTo != null) {
-                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
-                            + URLEncoder.encode(e.getMessage(), "UTF-8"));
-                    return;
-                } else {
-                    // TODO error message
-                }
-            }
-            if (replyTo != null) {
-                if ((verifiedWebIDs != null) && (verifiedWebIDs.size() > 0)) {
-                    try {
-                        String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
-                        redirect(response, authnResp);
+                    List<WebIdClaim> verifiedWebIDs = x509Claim.getVerified();
+                    if (verifiedWebIDs.size() > 0) {
+                        try {
+                            String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
+                            redirect(response, authnResp);
 
-                    } catch (InvalidKeyException e) {
-                        LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
-                    } catch (NoSuchAlgorithmException e) {
-                        LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
-                    } catch (SignatureException e) {
-                        LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                        } catch (InvalidKeyException e) {
+                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                        } catch (NoSuchAlgorithmException e) {
+                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                        } catch (SignatureException e) {
+                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                        }
+                    } else {
+                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noVerifiedWebID");
                     }
-                } else {
-                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noVerifiedWebID");
+                    return;
                 }
-                return;
+            } else {
+                if (replyTo != null) {
+                    LinkedList<Throwable> probs = x509Claim.getProblemDescription();
+                    if (probs.size() > 0) {
+                        Throwable first = probs.getFirst();
+                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
+                                + URLEncoder.encode(first.getMessage(), "UTF-8"));
+                    }
+                    return;
+                }
             }
         }
+
         //anything that falls through to here, we show the help page
 
-        request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
-                verifiedWebIDs);
+        request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR, x509Claim);
         response.setContentType("text/html");
         RequestDispatcher requestDispatcher = request
                 .getRequestDispatcher(shortRedirectInclude);
@@ -184,7 +189,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
     /**
      * @param verifiedWebIDs     a list of webIds identifying the user (only the fist will be
      *                           used)
-     * @param simpleRequestParam the service that the response is sent to
+     * @param replyTo the service that the response is sent to
      * @return the URL of the response with the webid, timestamp appended and
      *         signed
      * @throws NoSuchAlgorithmException
@@ -194,12 +199,12 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
      */
 
     private String createSignedResponse(Collection<? extends WebIdClaim> verifiedWebIDs,
-                                        String simpleRequestParam) throws NoSuchAlgorithmException,
+                                        String replyTo) throws NoSuchAlgorithmException,
             UnsupportedEncodingException, InvalidKeyException, SignatureException {
         /*
          * Reads the FoafSsl simple authn request.
          */
-        String authnResp = simpleRequestParam;
+        String authnResp = replyTo;
 
         String sigAlg = null;
         if ("RSA".equals(privateKey.getAlgorithm())) {

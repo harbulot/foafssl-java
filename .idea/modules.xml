@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/foafssl-filter/foafssl-filter.iml" filepath="$PROJECT_DIR$/foafssl-filter/foafssl-filter.iml" />
       <module fileurl="file://$PROJECT_DIR$/foafssl-identity-provider/foafssl-identity-provider.iml" filepath="$PROJECT_DIR$/foafssl-identity-provider/foafssl-identity-provider.iml" />
       <module fileurl="file://$PROJECT_DIR$/foafssl-identity-provider-webapp/foafssl-identity-provider-webapp.iml" filepath="$PROJECT_DIR$/foafssl-identity-provider-webapp/foafssl-identity-provider-webapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/foafssl-keygen/foafssl-keygen.iml" filepath="$PROJECT_DIR$/foafssl-keygen/foafssl-keygen.iml" />
       <module fileurl="file://$PROJECT_DIR$/foafssl-verifier/foafssl-verifier.iml" filepath="$PROJECT_DIR$/foafssl-verifier/foafssl-verifier.iml" />
     </modules>
   </component>

@@ -72,10 +72,16 @@
 		<module>foafssl-identity-provider</module>
 		<module>foafssl-identity-provider-webapp</module>
 		<module>foafssl-filter</module>
-	</modules>
+        <module>foafssl-keygen</module>
+    </modules>
 
 	<dependencyManagement>
 		<dependencies>
+            <dependency>
+                <groupId>net.java.dev.sommer</groupId>
+                <artifactId>foafssl-keygen</artifactId>
+                <version>${foafssl.version}</version>
+            </dependency>
 			<dependency>
 				<groupId>net.java.dev.sommer</groupId>
 				<artifactId>foafssl-verifier</artifactId>

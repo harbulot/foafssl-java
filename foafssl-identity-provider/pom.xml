@@ -20,6 +20,11 @@
 	</licenses>
 
 	<dependencies>
+        <dependency>
+            <groupId>net.java.dev.sommer</groupId>
+            <artifactId>foafssl-keygen</artifactId>
+            <scope>test</scope>
+        </dependency>        
 		<dependency>
 			<groupId>net.java.dev.sommer</groupId>
 			<artifactId>foafssl-verifier</artifactId>

@@ -32,29 +32,13 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package net.java.dev.sommer.foafssl.principals;
 
-import net.java.dev.sommer.foafssl.cache.GraphCache;
-import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
-import net.java.dev.sommer.foafssl.verifier.SesameFoafSslVerifier;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.*;
-import org.openrdf.repository.sail.SailRepositoryConnection;
 
-import java.io.IOException;
-import java.math.BigInteger;
 import java.net.URI;
 import java.security.Principal;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.security.interfaces.DSAPublicKey;
-import java.security.interfaces.RSAPublicKey;
 import java.util.*;
-import java.util.logging.Logger;
 
 /**
  * This is an abstract class for a FOAF+SSL principal.
