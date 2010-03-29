@@ -5,12 +5,12 @@
 	<groupId>net.java.dev.sommer</groupId>
 	<artifactId>foafssl</artifactId>
 	<packaging>pom</packaging>
-	<version>0.4-SNAPSHOT</version>
+	<version>0.5-SNAPSHOT</version>
 	<name>FOAF+SSL</name>
 	<url>http://sommer.dev.java.net/</url>
 
 	<properties>
-		<foafssl.version>0.4-SNAPSHOT</foafssl.version>
+		<foafssl.version>0.5-SNAPSHOT</foafssl.version>
 		<sesame.version>2.3.1</sesame.version>
 	</properties>
 
