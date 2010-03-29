@@ -39,10 +39,7 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * Created by IntelliJ IDEA.
- * User: hjs
- * Date: Mar 18, 2010
- * Time: 11:59:23 AM
+ * Created by IntelliJ IDEA. User: hjs Date: Mar 18, 2010 Time: 11:59:23 AM
  */
 public class MemoryGraphCache extends GraphCache {
     MemoryStore mem;
@@ -54,6 +51,5 @@ public class MemoryGraphCache extends GraphCache {
         ValueFactory vf = sailRepo.getValueFactory();
 
     }
-
 
 }

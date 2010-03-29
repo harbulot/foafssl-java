@@ -34,8 +34,8 @@ package net.java.dev.sommer.foafssl.verifier;
 
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.cache.MemoryGraphCache;
+import net.java.dev.sommer.foafssl.claims.X509Claim;
 import net.java.dev.sommer.foafssl.keygen.CertCreator;
-import net.java.dev.sommer.foafssl.principals.X509Claim;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,10 +44,12 @@ import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.security.InvalidKeyException;
+import java.security.KeyFactory;
 import java.security.Security;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.KeySpec;
+import java.security.spec.RSAPublicKeySpec;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -63,20 +65,21 @@ public class X509ClaimTest {
 
     public static final String TEST_FOAF_LOCATION = "http://foaf.example.net/bruno";
     public static final URI TEST_WEB_ID_URI = URI.create(TEST_FOAF_LOCATION + "#me");
-    public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";    
+    public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";
     public static final URL TEST_FOAF_URL;
-    static private HackableStreamHandlerFactory mockStreamHandlerFactory;
     X509Claim x509claim;
 
     final RSAPublicKey goodKey;
 
-    public X509ClaimTest() throws InvalidKeyException {
-        goodKey = new sun.security.rsa.RSAPublicKeyImpl(
-                new BigInteger("a4615390921b3d28b05b409280dbe6f34283a9fed892b670e111aadd6c951f58b101bf1c1fd7b5bb5" +
-                        "493a9fa269ff1e3814747a24098c3e0b29b6d5a21eec655e1a60873803a2b7e9a158f25239c04608b0a32ed9c26ce6c" +
-                        "1c2741426204b4351d02633d5c9a6bf7e387cd514d93445b37b4bb3ed85a114739c82e5e769ec277",16),
-                new BigInteger("65537")
-                );
+    public X509ClaimTest() throws Exception {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        KeySpec keySpec = new RSAPublicKeySpec(
+                new BigInteger(
+                        "a4615390921b3d28b05b409280dbe6f34283a9fed892b670e111aadd6c951f58b101bf1c1fd7b5bb5"
+                                + "493a9fa269ff1e3814747a24098c3e0b29b6d5a21eec655e1a60873803a2b7e9a158f25239c04608b0a32ed9c26ce6c"
+                                + "1c2741426204b4351d02633d5c9a6bf7e387cd514d93445b37b4bb3ed85a114739c82e5e769ec277",
+                        16), new BigInteger("65537"));
+        goodKey = (RSAPublicKey) keyFactory.generatePublic(keySpec);
     }
 
     static {
@@ -95,13 +98,14 @@ public class X509ClaimTest {
 
         GraphCacheLookup.setCache(new MemoryGraphCache());
 
-
     }
 
     /**
      * Create a cert Valid for one Hour
-     * @param foaf  the local foaf document name
-     * @return  an X509Claim
+     * 
+     * @param foaf
+     *            the local foaf document name
+     * @return an X509Claim
      * @throws Exception
      */
     private X509Claim createOneHourCert(String foaf) throws Exception {
@@ -109,8 +113,8 @@ public class X509ClaimTest {
         create.addDurationInHours("1");
         create.setSubjectCommonName("TEST");
         URL webIdDoc = X509ClaimTest.class.getResource(foaf);
-        webIdDoc = new URL(webIdDoc.getProtocol(),"localhost",webIdDoc.getFile());
-        URL webId = new URL(webIdDoc,"#me");
+        webIdDoc = new URL(webIdDoc.getProtocol(), "localhost", webIdDoc.getFile());
+        URL webId = new URL(webIdDoc, "#me");
         create.setSubjectWebID(webId.toString());
         create.setSubjectPublicKey(goodKey);
         create.generate();
@@ -119,7 +123,6 @@ public class X509ClaimTest {
         return x509claim;
     }
 
-
     @Test
     public void testGoodLocalFoafFile() throws Exception {
         X509Claim x509claim = createOneHourCert(TEST_GOOD_FOAF_FILENAME);
@@ -127,15 +130,15 @@ public class X509ClaimTest {
     }
 
     @Test
-     public void testGoodLocalFoafXhtmlRDFaFile() throws Exception {
+    public void testGoodLocalFoafXhtmlRDFaFile() throws Exception {
         X509Claim x509claim = createOneHourCert(TEST_GOOD_FOAF_XHTML_FILENAME);
         assertTrue(x509claim.verify());
-     }
+    }
 
     @Test
     public void testGoodLocalFoafHtmlRDFaFile() throws Exception {
         X509Claim x509claim = createOneHourCert(TEST_GOOD_FOAF_HTML_FILENAME);
-         assertTrue(x509claim.verify());
+        assertTrue(x509claim.verify());
 
     }
 
@@ -144,6 +147,5 @@ public class X509ClaimTest {
         X509Claim x509claim = createOneHourCert(TEST_WRONG_FOAF_FILENAME);
         assertFalse(x509claim.verify());
     }
-
 
 }

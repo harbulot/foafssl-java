@@ -56,6 +56,8 @@ import java.net.*;
 import java.security.*;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.KeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Enumeration;
@@ -87,7 +89,7 @@ public class ShortRedirectIdpServletTest {
 
     /**
      * Loads the 'localhost' keystore from the test keystore.
-     *
+     * 
      * @return test keystore.
      * @throws Exception
      */
@@ -103,7 +105,7 @@ public class ShortRedirectIdpServletTest {
     /**
      * Returns the public key matching the private key used to sign the
      * assertion.
-     *
+     * 
      * @return public key matching the private key used to sign the assertion.
      * @throws Exception
      */
@@ -122,7 +124,7 @@ public class ShortRedirectIdpServletTest {
     /**
      * Sets up the servlet tester, loads the keystore and passes the appropriate
      * parameters.
-     *
+     * 
      * @throws Exception
      */
     @Before
@@ -309,27 +311,28 @@ public class ShortRedirectIdpServletTest {
     /**
      * This filter is used for the test: it fakes the presence of a client
      * certificate in the request.
-     *
+     * 
      * @author Bruno Harbulot.
      */
     public static class FakeClientCertInsertionFilter implements Filter {
         static {
             Security.addProvider(new BouncyCastleProvider());
             try {
-                goodKey = new sun.security.rsa.RSAPublicKeyImpl(
-                        new BigInteger("a4615390921b3d28b05b409280dbe6f34283a9fed892b670e111aadd6c951f58b101bf1c1fd7b5bb5" +
-                                "493a9fa269ff1e3814747a24098c3e0b29b6d5a21eec655e1a60873803a2b7e9a158f25239c04608b0a32ed9c26ce6c" +
-                                "1c2741426204b4351d02633d5c9a6bf7e387cd514d93445b37b4bb3ed85a114739c82e5e769ec277", 16),
-                        new BigInteger("65537")
-                );
-            } catch (InvalidKeyException e) {
+                KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+                KeySpec keySpec = new RSAPublicKeySpec(
+                        new BigInteger(
+                                "a4615390921b3d28b05b409280dbe6f34283a9fed892b670e111aadd6c951f58b101bf1c1fd7b5bb5"
+                                        + "493a9fa269ff1e3814747a24098c3e0b29b6d5a21eec655e1a60873803a2b7e9a158f25239c04608b0a32ed9c26ce6c"
+                                        + "1c2741426204b4351d02633d5c9a6bf7e387cd514d93445b37b4bb3ed85a114739c82e5e769ec277",
+                                16), new BigInteger("65537"));
+                goodKey = (RSAPublicKey) keyFactory.generatePublic(keySpec);
+            } catch (Exception e) {
                 throw new Error(e);
             }
 
         }
 
         final static RSAPublicKey goodKey;
-
 
         private X509Certificate x509Certificate;
 
@@ -339,7 +342,7 @@ public class ShortRedirectIdpServletTest {
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain next)
                 throws IOException, ServletException {
             request.setAttribute("javax.servlet.request.X509Certificate",
-                    new X509Certificate[]{x509Certificate});
+                    new X509Certificate[] { x509Certificate });
             next.doFilter(request, response);
         }
 
@@ -349,10 +352,11 @@ public class ShortRedirectIdpServletTest {
                 create = new CertCreator();
                 create.addDurationInHours("1");
                 create.setSubjectCommonName("TEST");
-// avoid using the mock stream handler with commented code 
-//            URL webIdDoc = X509ClaimTest.class.getResource(foaf);
-//            webIdDoc = new URL(webIdDoc.getProtocol(), "localhost", webIdDoc.getFile());
-//            URL webId = new URL(webIdDoc, "#me");
+                // avoid using the mock stream handler with commented code
+                // URL webIdDoc = X509ClaimTest.class.getResource(foaf);
+                // webIdDoc = new URL(webIdDoc.getProtocol(), "localhost",
+                // webIdDoc.getFile());
+                // URL webId = new URL(webIdDoc, "#me");
                 create.setSubjectWebID(TEST_WEBID);
                 create.setSubjectPublicKey(goodKey);
                 create.generate();

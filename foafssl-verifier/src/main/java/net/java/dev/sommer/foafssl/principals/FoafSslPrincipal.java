@@ -1,7 +1,7 @@
 /*
 New BSD license: http://opensource.org/licenses/bsd-license.php
 
-Copyright (c) 2008-2009 Sun Microsystems, Inc.
+Copyright (c) 2009 Sun Microsystems, Inc.
 901 San Antonio Road, Palo Alto, CA 94303 USA. 
 All rights reserved.
 
@@ -30,35 +30,47 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 POSSIBILITY OF SUCH DAMAGE.
  */
-package net.java.dev.sommer.foafssl.verifier;
+package net.java.dev.sommer.foafssl.principals;
 
-import net.java.dev.sommer.foafssl.claims.WebIdClaim;
+import java.net.URI;
+import java.security.Principal;
 
 /**
- * This is an abstract FOAF+SSL verifier.
+ * This is an abstract class for a FOAF+SSL principal.
  * 
- * @author Bruno Harbulot.
+ * @author Bruno Harbulot
  */
-public abstract class FoafSslVerifier {
-    // of course this should be created by lookup not here in the code
-    private final static SesameFoafSslVerifier verifier = new SesameFoafSslVerifier();
+public abstract class FoafSslPrincipal implements Principal {
+    /**
+     * FOAF+SSL URI, a.k.a Web ID.
+     */
+    protected final URI uri;
 
     /**
-     * Verifies a WebId using foaf+ssl
+     * Creates a FOAF+SSL Principal.
      * 
-     * @param webid
-     *            a Web ID claim
-     * @return true if verified
+     * @param uri
+     *            Web ID.
      */
-    public abstract boolean verify(WebIdClaim webid);
+    public FoafSslPrincipal(URI uri) {
+        this.uri = uri;
+    }
 
     /**
-     * Factory method for constructing a verifier. Can construct a number of
-     * implementations
+     * Returns the Web ID as a URI.
      * 
-     * @return
+     * @return the Web ID.
      */
-    static public FoafSslVerifier getVerifier() {
-        return verifier;
+    public URI getUri() {
+        return this.uri;
+    }
+
+    /**
+     * Returns the Web ID as a ASCII String.
+     * 
+     * @return the Web ID.
+     */
+    public String getName() {
+        return getUri().toASCIIString();
     }
 }

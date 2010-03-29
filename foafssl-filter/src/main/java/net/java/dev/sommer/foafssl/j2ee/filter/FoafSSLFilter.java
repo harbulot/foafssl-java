@@ -13,8 +13,8 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import net.java.dev.sommer.foafssl.principals.WebIdClaim;
-import net.java.dev.sommer.foafssl.principals.X509Claim;
+import net.java.dev.sommer.foafssl.claims.WebIdClaim;
+import net.java.dev.sommer.foafssl.claims.X509Claim;
 import net.java.dev.sommer.foafssl.verifier.*;
 
 /**

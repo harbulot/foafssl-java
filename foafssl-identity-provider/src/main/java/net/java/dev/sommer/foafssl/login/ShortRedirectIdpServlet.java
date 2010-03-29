@@ -56,9 +56,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.java.dev.sommer.foafssl.principals.WebIdClaim;
+import net.java.dev.sommer.foafssl.claims.WebIdClaim;
+import net.java.dev.sommer.foafssl.claims.X509Claim;
 
-import net.java.dev.sommer.foafssl.principals.X509Claim;
 import org.bouncycastle.util.encoders.Base64;
 
 /**
@@ -139,7 +139,9 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
                 return;
             }
         } else {
-            x509Claim = new X509Claim(certificates[0]);//TODO: what about the other certs? should one iterate?
+            x509Claim = new X509Claim(certificates[0]);// TODO: what about the
+            // other certs? should
+            // one iterate?
             if (x509Claim.verify()) {
                 if (replyTo != null) {
                     List<WebIdClaim> verifiedWebIDs = x509Claim.getVerified();
@@ -176,20 +178,21 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             }
         }
 
-        //anything that falls through to here, we show the help page
+        // anything that falls through to here, we show the help page
 
         request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR, x509Claim);
         response.setContentType("text/html");
-        RequestDispatcher requestDispatcher = request
-                .getRequestDispatcher(shortRedirectInclude);
+        RequestDispatcher requestDispatcher = request.getRequestDispatcher(shortRedirectInclude);
         requestDispatcher.include(request, response);
 
     }
 
     /**
-     * @param verifiedWebIDs     a list of webIds identifying the user (only the fist will be
-     *                           used)
-     * @param replyTo the service that the response is sent to
+     * @param verifiedWebIDs
+     *            a list of webIds identifying the user (only the fist will be
+     *            used)
+     * @param replyTo
+     *            the service that the response is sent to
      * @return the URL of the response with the webid, timestamp appended and
      *         signed
      * @throws NoSuchAlgorithmException
@@ -199,8 +202,8 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
      */
 
     private String createSignedResponse(Collection<? extends WebIdClaim> verifiedWebIDs,
-                                        String replyTo) throws NoSuchAlgorithmException,
-            UnsupportedEncodingException, InvalidKeyException, SignatureException {
+            String replyTo) throws NoSuchAlgorithmException, UnsupportedEncodingException,
+            InvalidKeyException, SignatureException {
         /*
          * Reads the FoafSsl simple authn request.
          */
@@ -234,9 +237,10 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
 
     /**
      * Redirect request to the given url
-     *
+     * 
      * @param response
-     * @param respUrl  1the response Url to redirect to
+     * @param respUrl
+     *            1the response Url to redirect to
      */
     private void redirect(HttpServletResponse response, String respUrl) {
         response.setStatus(HttpServletResponse.SC_MOVED_TEMPORARILY);

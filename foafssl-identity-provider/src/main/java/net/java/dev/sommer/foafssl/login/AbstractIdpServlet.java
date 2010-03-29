@@ -55,8 +55,6 @@ import javax.servlet.http.HttpServlet;
 
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.cache.MemoryGraphCache;
-import net.java.dev.sommer.foafssl.verifier.SesameFoafSslVerifier;
-import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.sail.SailException;
 
@@ -93,7 +91,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
     public final static String SIGNING_CERT_REQATTR = "net.java.dev.sommer.foafssl.login.signing_cert";
     public final static String SIGNING_PUBKEY_REQATTR = "net.java.dev.sommer.foafssl.login.signing_pubkey";
 
-//    protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new SesameFoafSslVerifier();
+    // protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new
+    // SesameFoafSslVerifier();
 
     protected volatile PrivateKey privateKey = null;
     protected volatile PublicKey publicKey = null;
@@ -131,13 +130,15 @@ public abstract class AbstractIdpServlet extends HttpServlet {
 
         try {
 
-            //todo: this should be done via lookup
+            // todo: this should be done via lookup
             GraphCacheLookup.setCache(new MemoryGraphCache());
 
         } catch (SailException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace(); // To change body of catch statement use File |
+                                 // Settings | File Templates.
         } catch (RepositoryException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            e.printStackTrace(); // To change body of catch statement use File |
+                                 // Settings | File Templates.
         }
 
         try {
