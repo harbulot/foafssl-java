@@ -139,10 +139,10 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
                 return;
             }
         } else {
-            x509Claim = new X509Claim(certificates[0]);// TODO: what about the
-            // other certs? should
-            // one iterate?
+            x509Claim = new X509Claim(certificates[0]);
             if (x509Claim.verify()) {
+                request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
+                        x509Claim.getPrincipals());
                 if (replyTo != null) {
                     List<WebIdClaim> verifiedWebIDs = x509Claim.getVerified();
                     if (verifiedWebIDs.size() > 0) {
@@ -180,7 +180,6 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
 
         // anything that falls through to here, we show the help page
 
-        request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR, x509Claim);
         response.setContentType("text/html");
         RequestDispatcher requestDispatcher = request.getRequestDispatcher(shortRedirectInclude);
         requestDispatcher.include(request, response);

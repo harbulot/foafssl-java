@@ -44,7 +44,7 @@ public abstract class FoafSslVerifier {
     private final static SesameFoafSslVerifier verifier = new SesameFoafSslVerifier();
 
     /**
-     * Verifies a WebId using foaf+ssl
+     * Verifies a WebId using FOAF+SSL
      * 
      * @param webid
      *            a Web ID claim

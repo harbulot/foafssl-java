@@ -40,7 +40,7 @@ import java.security.Principal;
  * 
  * @author Bruno Harbulot
  */
-public abstract class FoafSslPrincipal implements Principal {
+public abstract class WebIdPrincipal implements Principal {
     /**
      * FOAF+SSL URI, a.k.a Web ID.
      */
@@ -52,7 +52,7 @@ public abstract class FoafSslPrincipal implements Principal {
      * @param uri
      *            Web ID.
      */
-    public FoafSslPrincipal(URI uri) {
+    public WebIdPrincipal(URI uri) {
         this.uri = uri;
     }
 

@@ -2,7 +2,7 @@
 	pageEncoding="UTF-8"%>
 <%@page import="net.java.dev.sommer.foafssl.login.AbstractIdpServlet"%>
 <%@page import="java.util.Collection"%>
-<%@page import="net.java.dev.sommer.foafssl.principals.FoafSslPrincipal"%>
+<%@page import="net.java.dev.sommer.foafssl.principals.WebIdPrincipal"%>
 <%@page import="java.security.PublicKey"%>
 <%@page import="java.security.interfaces.RSAPublicKey"%>
 <%@page import="org.bouncycastle.openssl.PEMWriter"%>
@@ -21,7 +21,7 @@ service in a secure manner.
 
 <p>For example, the client that has just loaded this page (you) <%
 	@SuppressWarnings("unchecked")
-	Collection<? extends FoafSslPrincipal> verifiedWebIDs = (Collection<? extends FoafSslPrincipal>) request
+	Collection<? extends WebIdPrincipal> verifiedWebIDs = (Collection<? extends WebIdPrincipal>) request
 			.getAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR);
 	if (verifiedWebIDs == null || verifiedWebIDs.size() == 0) {
 %> does not have a verified WebID. To try out this IdP service, create yourself a
@@ -31,7 +31,7 @@ service.</p>
 <%
 	} else {
 		out.println(" have the following WebIDs:<ul>");
-		for (FoafSslPrincipal ids : verifiedWebIDs) {
+		for (WebIdPrincipal ids : verifiedWebIDs) {
 			out.println("<li><a href='" + ids.getUri() + "'>"
 					+ ids.getUri() + "</a></li>");
 		}
