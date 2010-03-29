@@ -255,7 +255,9 @@ public class ShortRedirectIdpServletTest {
         System.out.println("Response status: " + response.getStatus());
         String location = response.getHeader("Location");
         System.out.println("Response Location header: " + location);
-        System.out.println("Response Location header length: " + location.length());
+        if (location != null) {
+            System.out.println("Response Location header length: " + location.length());
+        }
         System.out.println();
 
         /*

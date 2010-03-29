@@ -46,6 +46,8 @@ import java.net.URLStreamHandler;
 import java.net.URLStreamHandlerFactory;
 import java.security.Security;
 import java.security.cert.X509Certificate;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
@@ -205,8 +207,10 @@ public class DereferencingFoafSslVerifierTest {
 
     @Test
     public void testRemoteFoafFile() throws Exception {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("MMM dd HH:mm:ss zzz yyyy");
+        Date validationDate = dateFormat.parse("Apr 10 18:06:10 GMT 2010");
         assertNotNull(this.verifier.verifyByDereferencing(TEST_WEB_ID_URI, this.x509Certificate
                 .getPublicKey(), this.x509Certificate.getNotBefore(), this.x509Certificate
-                .getNotAfter()));
+                .getNotAfter(), validationDate));
     }
 }

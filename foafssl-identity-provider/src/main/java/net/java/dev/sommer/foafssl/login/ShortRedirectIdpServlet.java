@@ -166,7 +166,9 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             response.setContentType("text/html");
             RequestDispatcher requestDispatcher = request
                     .getRequestDispatcher(shortRedirectInclude);
-            requestDispatcher.include(request, response);
+            if (requestDispatcher != null) {
+                requestDispatcher.include(request, response);
+            }
         }
     }
 
