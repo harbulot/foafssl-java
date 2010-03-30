@@ -38,6 +38,7 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -68,10 +69,10 @@ import net.java.dev.sommer.foafssl.principals.WebIdPrincipal;
  * @author Henry Story
  */
 public class X509Claim {
-    private X509Certificate certClaim;
-    private LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
-    private List<WebIdClaim> verified = new LinkedList<WebIdClaim>();
-    private List<WebIdClaim> problematic = new LinkedList<WebIdClaim>();
+    private final X509Certificate certClaim;
+    private final LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
+    private final List<WebIdClaim> verified = new LinkedList<WebIdClaim>();
+    private final List<WebIdClaim> problematic = new LinkedList<WebIdClaim>();
     static transient Logger LOG = Logger.getLogger(X509Claim.class.getName());
 
     public X509Claim(X509Certificate cert) {
@@ -167,18 +168,20 @@ public class X509Claim {
                             e.printStackTrace();
                         }
                     } else {
-                        // if we are to return other things, such as email and
-                        // so we would need a more
-                        // complex structure in the return, perhaps even a class
-                        // for the X.509 cert with
-                        // more helpful return methods
+                        /*
+                         * if we are to return other things, such as email and
+                         * so we would need a more complex structure in the
+                         * return, perhaps even a class for the X.509 cert with
+                         * more helpful return methods
+                         */
                     }
                 }
             }
         } catch (CertificateParsingException e) {
-            // TODO: decide what exception to throw
-            // (BH: perhaps throwing a CertificateException would be appropriate
-            // here?)
+            /*
+             * TODO: decide what exception to throw (BH: perhaps throwing a
+             * CertificateException would be appropriate here?)
+             */
             LOG.log(Level.WARNING,
                     "Unable to parse certificate for extracting the subjectAltNames.", e);
         }
@@ -190,11 +193,11 @@ public class X509Claim {
     }
 
     public List<WebIdClaim> getVerified() {
-        return verified;
+        return Collections.unmodifiableList(verified);
     }
 
     public List<WebIdClaim> getProblematic() {
-        return problematic;
+        return Collections.unmodifiableList(problematic);
     }
 
     public Collection<? extends WebIdPrincipal> getPrincipals() {

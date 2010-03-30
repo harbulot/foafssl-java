@@ -32,14 +32,14 @@
 
 package net.java.dev.sommer.foafssl.cache;
 
-import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * Created by IntelliJ IDEA. User: hjs Date: Mar 18, 2010 Time: 11:59:23 AM
+ * @author Henry Story
+ * @date Mar 18, 2010 Time: 11:59:23 AM
  */
 public class MemoryGraphCache extends GraphCache {
     MemoryStore mem;
@@ -48,8 +48,5 @@ public class MemoryGraphCache extends GraphCache {
         mem = new MemoryStore();
         mem.initialize();
         sailRepo = new SailRepository(mem);
-        ValueFactory vf = sailRepo.getValueFactory();
-
     }
-
 }

@@ -33,8 +33,7 @@
 package net.java.dev.sommer.foafssl.cache;
 
 /**
- * Created by IntelliJ IDEA. User: hjs Date: Mar 19, 2010 Time: 6:52:47 PM To
- * change this template use File | Settings | File Templates.
+ * @author Henry Story
  */
 public class GraphCacheLookup {
     static GraphCache cache;
@@ -46,5 +45,4 @@ public class GraphCacheLookup {
     public static void setCache(GraphCache gcache) {
         cache = gcache;
     }
-
 }

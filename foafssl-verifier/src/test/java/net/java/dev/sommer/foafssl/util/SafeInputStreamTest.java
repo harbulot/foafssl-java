@@ -32,24 +32,18 @@
 
 package net.java.dev.sommer.foafssl.util;
 
-import junit.framework.TestCase;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
-import static org.junit.Assert.assertTrue;
+import org.junit.Before;
+import org.junit.Test;
 
 /**
- * Created by IntelliJ IDEA.
- * User: hjs
- * Date: Mar 7, 2010
- * Time: 2:41:20 PM
- * To change this template use File | Settings | File Templates.
+ * @author Henry Story
+ * @date Mar 7, 2010 Time: 2:41:20 PM
  */
 public class SafeInputStreamTest {
 
@@ -60,7 +54,6 @@ public class SafeInputStreamTest {
     public void setUp() throws UnsupportedEncodingException {
         in = new ByteArrayInputStream(test.getBytes("UTF-8"));
     }
-
 
     @Test
     public void testRead() throws Exception {
@@ -76,15 +69,15 @@ public class SafeInputStreamTest {
 
     @Test
     public void testRead2() throws Exception {
-         SafeInputStream safe = new SafeInputStream(in, 6);
-         byte[] buf = new byte[4];
+        SafeInputStream safe = new SafeInputStream(in, 6);
+        byte[] buf = new byte[4];
 
-         assertTrue(safe.read(buf)==4);
-         assertTrue(new String(buf,"UTF-8").equals("1234"));
-         assertTrue(safe.read(buf)==2);
-         assertTrue(new String(buf,"UTF-8").equals("5634"));
-         assertTrue(safe.read(buf)==-1);
-        assertTrue(new String(buf,"UTF-8").equals("5634"));        
+        assertTrue(safe.read(buf) == 4);
+        assertTrue(new String(buf, "UTF-8").equals("1234"));
+        assertTrue(safe.read(buf) == 2);
+        assertTrue(new String(buf, "UTF-8").equals("5634"));
+        assertTrue(safe.read(buf) == -1);
+        assertTrue(new String(buf, "UTF-8").equals("5634"));
     }
 
     @Test

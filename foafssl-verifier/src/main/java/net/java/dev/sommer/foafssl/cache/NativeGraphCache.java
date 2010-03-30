@@ -40,15 +40,15 @@ import org.openrdf.sail.nativerdf.NativeStore;
 import java.io.File;
 
 /**
- * Created by IntelliJ IDEA. User: hjs Date: Mar 18, 2010 Time: 11:54:02 AM To
- * change this template use File | Settings | File Templates.
+ * @author Henry Story
+ * @date Mar 18, 2010 Time: 11:54:02 AM
  */
 public class NativeGraphCache extends GraphCache {
     NativeStore natv;
 
     public NativeGraphCache(File dir) throws SailException, RepositoryException {
-        natv = new NativeStore(dir); // todo: will set more complex indexes
-                                     // later
+        // TODO: will set more complex indexes later
+        natv = new NativeStore(dir);
         natv.initialize();
         sailRepo = new SailRepository(natv);
     }

@@ -34,14 +34,10 @@ package net.java.dev.sommer.foafssl.claims;
 
 /**
  * A Severe error.
- *
+ * 
  * Work may continue, but this is serious
- *
+ * 
  * @author Henry Story
- */
-
-/**
- * A warning message. Information could be lost, but verification can continue.
  */
 class Severe extends Error {
     private static final long serialVersionUID = -3208492633760137206L;

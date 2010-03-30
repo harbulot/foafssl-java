@@ -48,8 +48,6 @@ import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
 /**
  * This is an abstract class for a FOAF+SSL WebId claim.
  * 
- * TODO: each for an alternative name in the certificate.
- * 
  * @author Bruno Harbulot
  * @author Henry Story
  */
@@ -67,13 +65,13 @@ public class WebIdClaim {
     private LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
 
     /**
-     * Creates a FOAF+SSL X509Claim. Principals are uniquely identified by a
-     * URI, The URI refers to them.
+     * Creates a Web ID claim.
      * 
      * @param webid
      *            Web ID.
-     * @pram cert the cert in which the web id was found and for which one knows
-     *       the client has a private key
+     * @param key
+     *            the public key claimed to be associated with this WebID
+     *            (obtained from the certificate).
      */
     public WebIdClaim(URI webid, PublicKey key) {
         this.webid = webid;
@@ -90,17 +88,7 @@ public class WebIdClaim {
     }
 
     /**
-     * currently Returns the Web ID, todo: perhaps it would be better to return
-     * a first last name pair
-     * 
-     * @return the Web ID.
-     */
-    public String getName() {
-        return getWebid().toASCIIString();
-    }
-
-    /**
-     * Returns the WebId as an ASCII string
+     * Returns the Web ID as an ASCII string.
      */
     public String toString() {
         return webid.toASCIIString();
@@ -111,17 +99,26 @@ public class WebIdClaim {
      * available by dereferencing this Web ID.
      */
     public boolean verify() {
-        return FoafSslVerifier.getVerifier().verify(this);
+        return verify(FoafSslVerifier.getVerifier());
+    }
+
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     */
+    public boolean verify(FoafSslVerifier verifier) {
+        return verifier.verify(this);
     }
 
     /**
      * Returns true if the FOAF file used to verify the Web ID has been
      * dereferenced securely.
-     * <p/>
+     * <p>
      * A similar function could return a number for different levels of
      * authentication Or it could return a reasoning to explain what graphs it
      * relied on, so that if in the future any of those were put into question
      * this could change....
+     * </p>
      * 
      * @return true if the FOAF file used to verify the Web ID has been
      *         dereferenced securely
@@ -143,7 +140,7 @@ public class WebIdClaim {
     }
 
     /**
-     * If the server from which the WebId when dereferenced serves a
+     * If the server from which the Web ID when dereferenced serves a
      * representation, has a certificate chain then this is saved here
      * 
      * @param serverCertificateChain

@@ -34,13 +34,10 @@ package net.java.dev.sommer.foafssl.claims;
 
 /**
  * A Warning error.
- *
- * Work can continue, but this is kept in case something does not work
- *
+ * 
+ * Work can continue, but this is kept in case something does not work.
+ * 
  * @author Henry Story
- */
-/**
- * A warning message. Information could be lost, but verification can continue.
  */
 class Warning extends Error {
     private static final long serialVersionUID = -1436422609282925012L;

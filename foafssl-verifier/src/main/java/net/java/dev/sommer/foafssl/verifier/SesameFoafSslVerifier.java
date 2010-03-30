@@ -194,8 +194,8 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
     private static BigInteger toInteger_helper(String num, String type) {
         if (type.equals(cert + "decimal") || type.equals(cert + "int")
                 || type.equals(xsd + "integer") || type.equals(xsd + "int")
-                || type.equals(xsd + "nonNegativeInteger")) { // cert:decimal is
-            // deprecated
+                || type.equals(xsd + "nonNegativeInteger")) {
+            // cert:decimal is deprecated
             return new BigInteger(num.trim(), 10);
         } else if (type.equals(cert + "hex")) {
             String strval = cleanHex(num);
