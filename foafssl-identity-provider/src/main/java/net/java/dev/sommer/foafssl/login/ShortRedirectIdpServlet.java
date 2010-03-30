@@ -38,6 +38,7 @@ import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.security.Signature;
 import java.security.SignatureException;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -140,39 +141,47 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             }
         } else {
             x509Claim = new X509Claim(certificates[0]);
-            if (x509Claim.verify()) {
-                request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
-                        x509Claim.getPrincipals());
-                if (replyTo != null) {
-                    List<WebIdClaim> verifiedWebIDs = x509Claim.getVerified();
-                    if (verifiedWebIDs.size() > 0) {
-                        try {
-                            String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
-                            redirect(response, authnResp);
+            try {
+                if (x509Claim.verify()) {
+                    request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR,
+                            x509Claim.getPrincipals());
+                    if (replyTo != null) {
+                        List<WebIdClaim> verifiedWebIDs = x509Claim.getVerified();
+                        if (verifiedWebIDs.size() > 0) {
+                            try {
+                                String authnResp = createSignedResponse(verifiedWebIDs, replyTo);
+                                redirect(response, authnResp);
 
-                        } catch (InvalidKeyException e) {
-                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
-                        } catch (NoSuchAlgorithmException e) {
-                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
-                        } catch (SignatureException e) {
-                            LOG.log(Level.SEVERE, "Error when signing the response.", e);
-                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                            } catch (InvalidKeyException e) {
+                                LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                                redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                            } catch (NoSuchAlgorithmException e) {
+                                LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                                redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                            } catch (SignatureException e) {
+                                LOG.log(Level.SEVERE, "Error when signing the response.", e);
+                                redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=IdPError");
+                            }
+                        } else {
+                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noVerifiedWebID");
                         }
-                    } else {
-                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "=noVerifiedWebID");
+                        return;
                     }
-                    return;
+                } else {
+                    if (replyTo != null) {
+                        LinkedList<Throwable> probs = x509Claim.getProblemDescription();
+                        if (probs.size() > 0) {
+                            Throwable first = probs.getFirst();
+                            redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
+                                    + URLEncoder.encode(first.getMessage(), "UTF-8"));
+                        }
+                        return;
+                    }
                 }
-            } else {
+            } catch (CertificateParsingException e) {
                 if (replyTo != null) {
-                    LinkedList<Throwable> probs = x509Claim.getProblemDescription();
-                    if (probs.size() > 0) {
-                        Throwable first = probs.getFirst();
-                        redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
-                                + URLEncoder.encode(first.getMessage(), "UTF-8"));
-                    }
+                    redirect(response, replyTo + "?" + ERROR_PARAMNAME + "="
+                            + URLEncoder.encode(e.getMessage(), "UTF-8"));
                     return;
                 }
             }

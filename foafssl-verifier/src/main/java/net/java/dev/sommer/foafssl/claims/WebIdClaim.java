@@ -59,7 +59,7 @@ public class WebIdClaim {
     private final PublicKey pubKey;
 
     private boolean deferencedSecurely;
-    private List<Certificate> foafServerCertificateChain;
+    private volatile List<Certificate> foafServerCertificateChain;
 
     private boolean verified = false;
     private LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();

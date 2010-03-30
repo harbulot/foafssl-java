@@ -38,7 +38,6 @@ import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -79,11 +78,11 @@ public class X509Claim {
         certClaim = cert;
     }
 
-    public boolean verify() {
+    public boolean verify() throws CertificateParsingException {
         return verify(new Date());
     }
 
-    public boolean verify(Date validityDate) {
+    public boolean verify(Date validityDate) throws CertificateParsingException {
         if (!isCurrent(validityDate)) {
             getProblemDescription().add(new Severe("Certificate is not currently valid."));
             return false;
@@ -144,7 +143,8 @@ public class X509Claim {
      * @return list of java.net.URIs built from the URIs in the subjectAltName
      *         extension.
      */
-    public static List<URI> getAlternativeURIName(X509Certificate cert) {
+    public static List<URI> getAlternativeURIName(X509Certificate cert)
+            throws CertificateParsingException {
         ArrayList<URI> answers = new ArrayList<URI>();
         try {
             if (cert == null) {
@@ -156,34 +156,29 @@ public class X509Claim {
             }
             for (Iterator<List<?>> it = names.iterator(); it.hasNext();) {
                 List<?> altNameList = it.next();
-                Integer id = (Integer) altNameList.get(0);
-                if (id == 6) { // see X.509 spec, section 8.3.2.1 these are the
-                    // URIs!
-                    Object uristr = altNameList.get(1);
-                    if (uristr instanceof String) {
+                Integer altNameType = (Integer) altNameList.get(0);
+                if (altNameType == 6) {
+                    /*
+                     * See X.509 spec, section 8.3.2.1 these are the URIs!
+                     */
+                    Object altNameValue = altNameList.get(1);
+                    if (altNameValue instanceof String) {
                         try {
-                            URI foafid = new URI((String) uristr);
+                            URI foafid = new URI((String) altNameValue);
                             answers.add(foafid);
                         } catch (URISyntaxException e) {
-                            e.printStackTrace();
+                            throw new CertificateParsingException(
+                                    "Invalid URI in subject alt. name.", e);
                         }
                     } else {
-                        /*
-                         * if we are to return other things, such as email and
-                         * so we would need a more complex structure in the
-                         * return, perhaps even a class for the X.509 cert with
-                         * more helpful return methods
-                         */
+                        throw new CertificateParsingException("Invalid URI in subject alt. name.");
                     }
                 }
             }
         } catch (CertificateParsingException e) {
-            /*
-             * TODO: decide what exception to throw (BH: perhaps throwing a
-             * CertificateException would be appropriate here?)
-             */
             LOG.log(Level.WARNING,
                     "Unable to parse certificate for extracting the subjectAltNames.", e);
+            throw e;
         }
         return answers;
     }
@@ -193,11 +188,11 @@ public class X509Claim {
     }
 
     public List<WebIdClaim> getVerified() {
-        return Collections.unmodifiableList(verified);
+        return verified;
     }
 
     public List<WebIdClaim> getProblematic() {
-        return Collections.unmodifiableList(problematic);
+        return problematic;
     }
 
     public Collection<? extends WebIdPrincipal> getPrincipals() {
