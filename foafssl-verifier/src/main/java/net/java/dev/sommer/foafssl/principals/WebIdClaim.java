@@ -35,7 +35,6 @@ package net.java.dev.sommer.foafssl.principals;
 import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
 
 import java.net.URI;
-import java.security.Principal;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
 import java.util.*;
@@ -49,7 +48,7 @@ import java.util.*;
  *
  * @author Bruno Harbulot
  */
-public class WebIdClaim implements Principal {
+public class WebIdClaim {
  
     /**
      * FOAF+SSL URI, a.k.a Web ID.
@@ -78,25 +77,8 @@ public class WebIdClaim implements Principal {
      *
      * @return the Web ID.
      */
-    public URI getWebid() {
+    public URI getWebId() {
         return this.webid;
-    }
-
-    /**
-     * currently Returns the Web ID,
-     * todo: perhaps it would be better to return a first last name pair
-     *
-     * @return the Web ID.
-     */
-    public String getName() {
-        return getWebid().toASCIIString();
-    }
-
-    /**
-     * Returns the WebId as an ASCII string
-     */
-    public String toString() {
-        return webid.toASCIIString();
     }
 
     /**
