@@ -116,12 +116,25 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         }
     }
 
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-
-        request.setAttribute(AbstractIdpServlet.SIGNING_CERT_REQATTR, certificate);
-        request.setAttribute(AbstractIdpServlet.SIGNING_PUBKEY_REQATTR, publicKey);
+    /**
+     * On receiving a POST from the form the user can get redirected to the provider.
+     *
+     * We only do a redirect after a POST. That means the user has to land on a static page first,
+     * accept to login which will be a POST form, that will lead to this mehtod.
+     * We can then allow the user to get redirected.
+     *
+     * This allows the user to change certificates in the browser, and so identity. once bugs such
+     * as http://code.google.com/p/chromium/issues/detail?id=29784 have been fixed in all browsers.
+     * For other browsers hacks will have to be found, and they will need to be shamed into fixing
+     * this.
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+   @Override
+   protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 
         String replyTo = request.getParameter(AUTHREQISSUER_PARAMNAME);
 
@@ -177,13 +190,49 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
         }
 
         //anything that falls through to here, we show the help page
-
+        request.setAttribute(AbstractIdpServlet.SIGNING_CERT_REQATTR, certificate);
+        request.setAttribute(AbstractIdpServlet.SIGNING_PUBKEY_REQATTR, publicKey);
         request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR, x509Claim);
         response.setContentType("text/html");
         RequestDispatcher requestDispatcher = request
                 .getRequestDispatcher(shortRedirectInclude);
         requestDispatcher.include(request, response);
+  }
 
+
+    /**
+     * The intial GET from the provider. This will call a page that will show the
+     * user if he is logged in some information about himself, or else ask him to login again
+     * (by changing the certificate in his browser - as far as that will be possible by browser
+     * fixes such as that described in
+     * http://www.google.com/buzz/henry.story/Naoh6kBQik4/Firefox-Hackers-needed-We-need-a-Firefox-plugin )
+     *
+     * There should be a FORM on that page that POSTS all the same values as we sent here.
+     * This will of course call doPost(..,..) which will redirect the user back to the service provider
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+       X509Certificate[] certificates = (X509Certificate[]) request
+                .getAttribute("javax.servlet.request.X509Certificate");
+
+        X509Claim x509Claim = null;
+
+        if (certificates != null && certificates.length == 0) {
+            x509Claim = new X509Claim(certificates[0]);//TODO: what about the other certs? should one iterate?
+            x509Claim.verify();
+        }
+        request.setAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR, x509Claim);
+        response.setContentType("text/html");
+        RequestDispatcher requestDispatcher = request
+                .getRequestDispatcher(shortRedirectInclude);
+        requestDispatcher.include(request, response);
+ 
     }
 
     /**
@@ -215,7 +264,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             throw new NoSuchAlgorithmException("Unsupported key algorithm type.");
         }
 
-        URI webId = verifiedWebIDs.iterator().next().getWebid();
+        URI webId = verifiedWebIDs.iterator().next().getWebId();
         authnResp += "?" + WEBID_PARAMNAME + "="
                 + URLEncoder.encode(webId.toASCIIString(), "UTF-8");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

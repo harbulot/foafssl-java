@@ -227,7 +227,7 @@ public class ShortRedirectIdpServletTest {
         HttpTester request = new HttpTester();
         HttpTester response = new HttpTester();
         request.setHeader("Host", authnReqResourceRef.getHostDomain());
-        request.setMethod("GET");
+        request.setMethod("POST");
         String authReqUrlQueryPart = authnReqResourceRef.getQuery();
         request.setURI(authnReqResourceRef.getPath()
                 + (authReqUrlQueryPart != null ? "?" + authReqUrlQueryPart : ""));
@@ -333,9 +333,11 @@ public class ShortRedirectIdpServletTest {
 
         private X509Certificate x509Certificate;
 
+      @Override
         public void destroy() {
         }
 
+      @Override
         public void doFilter(ServletRequest request, ServletResponse response, FilterChain next)
                 throws IOException, ServletException {
             request.setAttribute("javax.servlet.request.X509Certificate",
@@ -343,6 +345,7 @@ public class ShortRedirectIdpServletTest {
             next.doFilter(request, response);
         }
 
+      @Override
         public void init(FilterConfig config) throws ServletException {
             CertCreator create = null;
             try {

@@ -32,14 +32,11 @@
 
 package net.java.dev.sommer.foafssl.util;
 
-import junit.framework.TestCase;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 
 import static org.junit.Assert.assertTrue;

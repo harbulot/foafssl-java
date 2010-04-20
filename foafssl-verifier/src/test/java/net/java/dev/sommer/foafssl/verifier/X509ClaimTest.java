@@ -66,7 +66,6 @@ public class X509ClaimTest {
     public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";    
     public static final URL TEST_FOAF_URL;
     static private HackableStreamHandlerFactory mockStreamHandlerFactory;
-    X509Claim x509claim;
 
     final RSAPublicKey goodKey;
 
@@ -115,7 +114,7 @@ public class X509ClaimTest {
         create.setSubjectPublicKey(goodKey);
         create.generate();
         X509Certificate cert = create.getCertificate();
-        x509claim = new X509Claim(cert);
+        X509Claim x509claim = new X509Claim(cert);
         return x509claim;
     }
 

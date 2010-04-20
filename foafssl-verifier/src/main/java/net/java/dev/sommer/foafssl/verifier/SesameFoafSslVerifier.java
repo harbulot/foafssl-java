@@ -35,7 +35,6 @@ package net.java.dev.sommer.foafssl.verifier;
 import net.java.dev.sommer.foafssl.cache.GraphCache;
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.principals.WebIdClaim;
-import org.openrdf.OpenRDFException;
 import org.openrdf.model.Literal;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Value;
@@ -44,7 +43,6 @@ import org.openrdf.query.*;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepositoryConnection;
 
-import java.io.IOException;
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
@@ -104,7 +102,7 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
             }
 
             ValueFactory vf = rep.getValueFactory();
-            query.setBinding("agent", vf.createURI(webid.getWebid().toString()));
+            query.setBinding("agent", vf.createURI(webid.getWebId().toString()));
             TupleQueryResult answer = null;
             try {
                 answer = query.evaluate();

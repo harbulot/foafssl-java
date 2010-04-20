@@ -2,7 +2,8 @@
 	pageEncoding="UTF-8"%>
 <%@page import="net.java.dev.sommer.foafssl.login.AbstractIdpServlet"%>
 <%@page import="java.util.Collection"%>
-<%@page import="net.java.dev.sommer.foafssl.principals.FoafSslPrincipal"%>
+<%@page import="net.java.dev.sommer.foafssl.principals.X509Claim"%>
+<%@page import="net.java.dev.sommer.foafssl.principals.WebIdClaim"%>
 <%@page import="java.security.PublicKey"%>
 <%@page import="java.security.interfaces.RSAPublicKey"%>
 <%@page import="org.bouncycastle.openssl.PEMWriter"%>
@@ -21,9 +22,8 @@ service in a secure manner.
 
 <p>For example, the client that has just loaded this page (you) <%
 	@SuppressWarnings("unchecked")
-	Collection<? extends FoafSslPrincipal> verifiedWebIDs = (Collection<? extends FoafSslPrincipal>) request
-			.getAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR);
-	if (verifiedWebIDs == null || verifiedWebIDs.size() == 0) {
+	X509Claim x509Claim =  (X509Claim) request.getAttribute(AbstractIdpServlet.VERIFIED_WEBID_PRINCIPALS_REQATTR);
+	if (x509Claim == null ||  x509Claim.getVerified().size() == 0) {
 %> does not have a verified WebID. To try out this IdP service, create yourself a
 certificate using the <a href='http://foaf.me'>http://foaf.me</a>
 service.</p>
@@ -31,9 +31,9 @@ service.</p>
 <%
 	} else {
 		out.println(" have the following WebIDs:<ul>");
-		for (FoafSslPrincipal ids : verifiedWebIDs) {
-			out.println("<li><a href='" + ids.getUri() + "'>"
-					+ ids.getUri() + "</a></li>");
+		for ( WebIdClaim wid : x509Claim.getVerified()) {
+			out.println("<li><a href='" + wid.getWebId() + "'>"
+					+ wid.getWebId() + "</a></li>");
 		}
 		out.println("</ul>");
 	}
@@ -42,8 +42,8 @@ service.</p>
 <h4>Using this Identity Provider</h4>
 <p>To use this IdP to authenticate to a service that uses this <em>short redirect</em> method, use the following form:
 <form action='' method='get'>Requesting service URL: <input
-	type='text' size='80' name='authreqissuer'></input><input type='submit'
-	value='Log in to this service provider'></form>
+	type='text' size='80' name='authreqissuer'/><input type='submit'
+	value='Log in to this service provider'/></form>
 <p>This will send a redirection to the URL of the Service Provider (SP) you have specified in the form above, including a signed 
 assertion by this IdP about your WebID.</p>
 <p>For example, if the Service Provider's URL is <code>http://foaf.me/index.php</code>, and if this service
@@ -57,22 +57,24 @@ Users who then click on that link will be asked by this IdP to choose one of the
 certificates. Upon reception of their certificate, this server will then do
 FOAF+SSL authentication, and redirect to <code>http://foaf.me/index.php</code>
 with a number of extra url encoded parameter values, as explained below.</p>
-<p>The redirected to URL is constructed on the following pattern:<pre><b>$authreqissuer?webid=$webid&amp;ts=$timeStamp</b>&amp;sig=$URLSignature</pre>Where
-the above variables have the following meanings:
+<p>The redirected to URL is constructed on the following pattern:</p>
+<pre><b>$authreqissuer?webid=$webid&amp;ts=$timeStamp</b>&amp;sig=$URLSignature</pre>
+<p>Where
+the above variables have the following meanings:</p>
 <ul>
 	<li><code>$authreqissuer</code> is the URL passed by the server in
 	the initial request.</li>
-	<li><code>$webid</code> is the WebID of the user connecting.
+	<li><code>$webid</code> is the WebID of the user connecting.</li>
 	<li><code>$timeStamp</code> is a time stamp in XML Schema format
 	(same as used by Atom). This is needed to reduce the ease of developing
-	replay attacks.
+	replay attacks.</li>
 	<li><code>$URLSignature</code> is the signature of the whole URL
-	in bold above.
+	in bold above.</li>
 </ul>
-</p>
 <h4>Error responses</h4>
-<p>In case of error the service gets redirected to <pre>$authreqissuer?error=$code</pre>Where
-$code can be either one of
+<p>In case of error the service gets redirected to
+<code>$authreqissuer?error=$code</code>Where
+<code>$code</code> can be either one of</p>
 <ul>
 	<li><code>nocert</code>: when the client has no cert.
 	<li><code>noVerifiedWebId</code>: no verified WebId was found in the certificate
@@ -81,7 +83,7 @@ $code can be either one of
 	the IdP administrator!
 	<li>other messages, not standardised yet</li>
 </ul>
-</p>
+
 <h3>Verifiying the WebId</h3>
 <p>In order for the Service Provider (SP) requesting an identity
 from this Identity Provider to to be comfortable that the returned WebId
@@ -125,6 +127,6 @@ using for the SP to verify the url.</p>
 		out.println("</pre></li></ul>");
 	}
 %>
-</p>
+
 </body>
 </html>

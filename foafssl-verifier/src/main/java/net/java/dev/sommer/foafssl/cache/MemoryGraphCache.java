@@ -32,6 +32,8 @@
 
 package net.java.dev.sommer.foafssl.cache;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.sail.SailRepository;
@@ -39,17 +41,21 @@ import org.openrdf.sail.SailException;
 import org.openrdf.sail.memory.MemoryStore;
 
 /**
- * Created by IntelliJ IDEA.
- * User: hjs
- * Date: Mar 18, 2010
- * Time: 11:59:23 AM
+ * This needs to be moved.
+ *
+ * @author Henry Story
  */
 public class MemoryGraphCache extends GraphCache {
     MemoryStore mem;
 
-    public MemoryGraphCache() throws SailException, RepositoryException {
+    public MemoryGraphCache() throws Exception  {
         mem = new MemoryStore();
-        mem.initialize();
+      try {
+         mem.initialize();
+      } catch (SailException ex) {
+         Logger.getLogger(MemoryGraphCache.class.getName()).log(Level.SEVERE, null, ex);
+         throw new Exception("Could not initialize Memory Store");
+      }
         sailRepo = new SailRepository(mem);
         ValueFactory vf = sailRepo.getValueFactory();
 

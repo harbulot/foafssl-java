@@ -82,7 +82,7 @@ public abstract class GraphCache {
      * @return the repository connection containing the graph of the resource
      */
     public SailRepositoryConnection fetch(WebIdClaim webidClaim) {
-        java.net.URI webid = webidClaim.getWebid();
+        java.net.URI webid = webidClaim.getWebId();
         String scheme = webid.getScheme();
         if (!("http".equals(scheme) || "https".equals(scheme)
                 || "ftp".equals(scheme) || "ftps".equals(scheme)
@@ -153,7 +153,7 @@ public abstract class GraphCache {
             }
             try {
                 SafeInputStream stream = new SafeInputStream(foafDocInputStream, MAX_LENGTH);
-                repconn.add(stream, webidClaim.toString(), rdfFormat, foafdocUri);
+                repconn.add(stream, base.toString(), rdfFormat, foafdocUri);
                 if (stream.wasCutShort()) {
                     webidClaim.warn("Input from resource was cut off at " + stream.getMax() + " Data could be missing.");
                 }
