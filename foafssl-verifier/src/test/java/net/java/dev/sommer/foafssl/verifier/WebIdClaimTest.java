@@ -34,7 +34,8 @@ package net.java.dev.sommer.foafssl.verifier;
 
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.cache.MemoryGraphCache;
-import net.java.dev.sommer.foafssl.principals.WebIdClaim;
+import net.java.dev.sommer.foafssl.claims.WebIdClaim;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.openssl.PEMReader;
 import org.junit.Before;
@@ -74,20 +75,20 @@ public class WebIdClaimTest {
         }
 
         /*
-        * TODO: Remove this and just use file mime types
-         * Creates a mock URLConnection not to make outside connections to
-         * de-reference the FOAF file for the tests.
-         * This can only be created once per JVM, so this is a little problematic
+         * TODO: Remove this and just use file mime types Creates a mock
+         * URLConnection not to make outside connections to de-reference the
+         * FOAF file for the tests. This can only be created once per JVM, so
+         * this is a little problematic
          */
 
-         try {
-             URL.setURLStreamHandlerFactory(mockStreamHandlerFactory = new HackableStreamHandlerFactory());
-         } catch (Throwable e) {
-             throw new Error("The tests would wrongly succeed",e);
-         }
+        try {
+            URL
+                    .setURLStreamHandlerFactory(mockStreamHandlerFactory = new HackableStreamHandlerFactory());
+        } catch (Throwable e) {
+            throw new Error("The tests would wrongly succeed", e);
+        }
 
     }
-
 
     @Before
     public void setUp() throws Exception {
@@ -101,7 +102,7 @@ public class WebIdClaimTest {
                 .getResourceAsStream(TEST_CERT_FILENAME));
 
         PEMReader pemReader = new PEMReader(certReader);
-        X509Certificate x509Certificate=null;
+        X509Certificate x509Certificate = null;
         while (pemReader.ready()) {
             Object pemObject = pemReader.readObject();
             if (pemObject instanceof X509Certificate) {
@@ -115,127 +116,122 @@ public class WebIdClaimTest {
         pemReader.close();
     }
 
-
     @Test
     public void testGoodLocalFoafFile() throws Exception {
         mockStreamHandlerFactory.setUp("application/rdf+xml", TEST_GOOD_FOAF_FILENAME);
-        WebIdClaim wic = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim wic = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(wic.verify());
     }
 
     @Test
     public void testGoodLocalFoafXhtmlRDFaFile() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", TEST_GOOD_FOAF_XHTML_FILENAME);
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     /**
-     * Same test as testGoodLocalFoafXhtmlRDFaFile() but with a different mime type
+     * Same test as testGoodLocalFoafXhtmlRDFaFile() but with a different mime
+     * type
+     * 
      * @throws Exception
      */
     @Test
     public void testGoodLocalFoafXhtmlRDFaFile2() throws Exception {
         mockStreamHandlerFactory.setUp("application/xhtml+xml", TEST_GOOD_FOAF_XHTML_FILENAME);
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
-
 
     @Test
     public void testGoodLocalFoafHtmlRDFaFile() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", TEST_GOOD_FOAF_HTML_FILENAME);
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testBadLocalFoafFile() throws Exception {
         mockStreamHandlerFactory.setUp("application/rdf+xml", TEST_WRONG_FOAF_FILENAME);
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertFalse(pr.verify());
     }
-
 
     @Test
     public void testLocalBblfishFile_old() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-old.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishFile_old_wrong_mime_type() throws Exception {
         mockStreamHandlerFactory.setUp("application/rdf+xml", "bblfish-foaf-old.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertFalse(pr.verify());
     }
-
-
 
     @Test
     public void testLocalBblfishFile_old2() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-old-2.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishFile_old3() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-old-3.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishFile_old4() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-old-4.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
-
 
     @Test
     public void testLocalBblfishLiteralFile_1() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-1.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishLiteralFile_2() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-2.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
-   }
+    }
 
     @Test
     public void testLocalBblfishLiteralFile_3() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-3.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishLiteralFile_4() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-4.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishLiteralFile_5() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-5.xhtml");
-        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
         assertTrue(pr.verify());
     }
 
     @Test
     public void testLocalBblfishLiteralFile_6() throws Exception {
         mockStreamHandlerFactory.setUp("text/html", "bblfish-foaf-literal-wrong.xhtml");
-         WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI,pubkey);
-         assertFalse(pr.verify());
+        WebIdClaim pr = new WebIdClaim(TEST_WEB_ID_URI, pubkey);
+        assertFalse(pr.verify());
     }
-
 
 }

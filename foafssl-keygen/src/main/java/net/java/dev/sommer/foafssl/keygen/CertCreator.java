@@ -37,16 +37,26 @@ import org.bouncycastle.asn1.misc.NetscapeCertType;
 import org.bouncycastle.asn1.x509.*;
 import org.bouncycastle.x509.X509V3CertificateGenerator;
 import org.bouncycastle.x509.extension.SubjectKeyIdentifierStructure;
-import sun.security.rsa.RSAPublicKeyImpl;
 
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
+import java.security.SignatureException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.security.spec.RSAPrivateKeySpec;
+import java.security.spec.RSAPublicKeySpec;
 import java.util.Date;
 import java.util.Vector;
 import java.util.logging.Logger;
@@ -54,14 +64,17 @@ import java.util.logging.Logger;
 /**
  * Creates a certificate. Useful for debugging.
  * <p/>
- * This class was taken from xwiki CertGen class. It is clear that this should be refactored a little bit,
- * and placed in a library
- *
+ * This class was taken from xwiki CertGen class. It is clear that this should
+ * be refactored a little bit, and placed in a library
+ * 
  * @author Henry Story
  */
 
 public class CertCreator {
-    static final String issuer = "O=FOAF\\+SSL, OU=The Community of Self Signers, CN=Not a Certification Authority"; //the exact name for the FOAF+SSL issuer is still being decided
+    static final String issuer = "O=FOAF\\+SSL, OU=The Community of Self Signers, CN=Not a Certification Authority";
+    /*
+     * The exact name for the FOAF+SSL issuer is still being decided.
+     */
 
     static transient Logger log = Logger.getLogger(CertCreator.class.getName());
     String webId;
@@ -71,9 +84,10 @@ public class CertCreator {
     int durationInDays;
     float durationInHours;
     PublicKey subjectPubKey;
-    BigInteger modulus = new BigInteger("d2hda8ngk98t8gunqbho6eo0m9m0icsig5ib9pjdqjg8k11cpdq72vkv3s3p9ifebeu7q106c95" +
-            "bel6nrvd9fb64lu4btdtchouuvl2emc9fchcf75a5ns9cmq98h5q8pd5h8o57jnlc1aamc7ee98nelli3gg1kg93t" +
-            "n81vapoprqc0bn2jnl10ti5da1gu7buosk14fqeet", 32);
+    BigInteger modulus = new BigInteger(
+            "d2hda8ngk98t8gunqbho6eo0m9m0icsig5ib9pjdqjg8k11cpdq72vkv3s3p9ifebeu7q106c95"
+                    + "bel6nrvd9fb64lu4btdtchouuvl2emc9fchcf75a5ns9cmq98h5q8pd5h8o57jnlc1aamc7ee98nelli3gg1kg93t"
+                    + "n81vapoprqc0bn2jnl10ti5da1gu7buosk14fqeet", 32);
 
     PrivateKey issuerPrivateKey;
     PublicKey issuerPubKey;
@@ -82,20 +96,23 @@ public class CertCreator {
     static SecureRandom numberGenerator;
     X509Name issuerDN;
 
-    public CertCreator() throws InvalidKeyException {
-        issuerPubKey = new RSAPublicKeyImpl( modulus, new BigInteger("65536"));
-        issuerPrivateKey = new RSAPrivateKeyImpl(
-                modulus,
-                new BigInteger("60u1fqk2d4gjbascjcnrnu001cvtggg8s19gufa62oheg752imlni0hoq7p0jee8g95n52evee127notk2" +
-                        "cc1o58pq74ft4tnfs7mj65bltgnji8t30v79uorpcbiqcj2pmu69q1l3chult0frhtrok197jku19jdgcprjvngtd" +
-                        "sflnjlgoopo5dbvc10c96g1li4pd661q71", 32)
-        );
-    }
+    public CertCreator() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+        KeySpec keySpec = new RSAPublicKeySpec(modulus, new BigInteger("65537"));
+        issuerPubKey = (RSAPublicKey) keyFactory.generatePublic(keySpec);
 
+        keySpec = new RSAPrivateKeySpec(
+                modulus,
+                new BigInteger(
+                        "60u1fqk2d4gjbascjcnrnu001cvtggg8s19gufa62oheg752imlni0hoq7p0jee8g95n52evee127notk2"
+                                + "cc1o58pq74ft4tnfs7mj65bltgnji8t30v79uorpcbiqcj2pmu69q1l3chult0frhtrok197jku19jdgcprjvngtd"
+                                + "sflnjlgoopo5dbvc10c96g1li4pd661q71", 32));
+        issuerPrivateKey = (RSAPrivateKey) keyFactory.generatePrivate(keySpec);
+    }
 
     /**
      * partly taken from UUID class. Generates random numbers
-     *
+     * 
      * @return a UUID BigInteger
      */
     BigInteger nextRandom() {
@@ -113,16 +130,18 @@ public class CertCreator {
         return cert;
     }
 
-
     public void setSubjectWebID(String urlStr) {
         try {
             URL url = new URL(urlStr);
             String protocol = url.getProtocol();
-            if (protocol.equals("http") || protocol.equals("https") || protocol.equals("ftp") || protocol.equals("ftps")) {
-                //everything probably ok, though really https should be the default
+            if (protocol.equals("http") || protocol.equals("https") || protocol.equals("ftp")
+                    || protocol.equals("ftps")) {
+                // everything probably ok, though really https should be the
+                // default
             } else {
-                //could very well be a mistake
-                log.warning("using WebId with protocol " + protocol + ". Could be a mistake. WebId=" + url);
+                // could very well be a mistake
+                log.warning("using WebId with protocol " + protocol
+                        + ". Could be a mistake. WebId=" + url);
             }
 
         } catch (MalformedURLException e) {
@@ -143,7 +162,6 @@ public class CertCreator {
         this.endDate = endDate;
     }
 
-
     public void addDurationInDays(String days) {
         try {
             Float d = Float.valueOf(days);
@@ -153,7 +171,7 @@ public class CertCreator {
         } catch (NumberFormatException e) {
             log.warning("unable to interpret the number of days passed as a float " + days);
         }
-        //this.durationInDays = days;
+        // this.durationInDays = days;
     }
 
     public void addDurationInHours(String hours) {
@@ -169,17 +187,18 @@ public class CertCreator {
     }
 
     /**
-     * Set the <a href="http://en.wikipedia.org/wiki/Spkac">Spkac</a> data sent by browser
-     * One should set either this or the pemCSR.
-     *
-     * @param pubkey the public key for the subject
+     * Set the <a href="http://en.wikipedia.org/wiki/Spkac">Spkac</a> data sent
+     * by browser One should set either this or the pemCSR.
+     * 
+     * @param pubkey
+     *            the public key for the subject
      */
     public void setSubjectPublicKey(PublicKey pubkey) {
         this.subjectPubKey = pubkey;
     }
 
-
-    public void generate() throws Exception {
+    public void generate() throws CertificateException, InvalidKeyException, IllegalStateException,
+            NoSuchAlgorithmException, SignatureException, NoSuchProviderException {
         X509V3CertificateGenerator certGenerator = new X509V3CertificateGenerator();
 
         certGenerator.reset();
@@ -188,7 +207,6 @@ public class CertCreator {
          * certificate, issuer and subject are the same.
          */
         certGenerator.setIssuerDN(new X509Name(issuer));
-
 
         Vector<DERObjectIdentifier> subjectDnOids = new Vector<DERObjectIdentifier>();
         Vector<String> subjectDnValues = new Vector<String>();
@@ -225,64 +243,43 @@ public class CertCreator {
         /*
          * Sets the signature algorithm.
          */
-//        String pubKeyAlgorithm = service.caPubKey.getAlgorithm();
-//        if (pubKeyAlgorithm.equals("DSA")) {
-//            certGenerator.setSignatureAlgorithm("SHA1WithDSA");
-//        } else if (pubKeyAlgorithm.equals("RSA")) {
+        // String pubKeyAlgorithm = service.caPubKey.getAlgorithm();
+        // if (pubKeyAlgorithm.equals("DSA")) {
+        // certGenerator.setSignatureAlgorithm("SHA1WithDSA");
+        // } else if (pubKeyAlgorithm.equals("RSA")) {
         certGenerator.setSignatureAlgorithm("SHA1WithRSAEncryption");
-//        } else {
-//            RuntimeException re = new RuntimeException(
-//                    "Algorithm not recognised: " + pubKeyAlgorithm);
-//            LOGGER.error(re.getMessage(), re);
-//            throw re;
-//        }
+        // } else {
+        // RuntimeException re = new RuntimeException(
+        // "Algorithm not recognised: " + pubKeyAlgorithm);
+        // LOGGER.error(re.getMessage(), re);
+        // throw re;
+        // }
 
         /*
          * Adds the Basic Constraint (CA: false) extension.
          */
-        certGenerator.addExtension(X509Extensions.BasicConstraints, true,
-                new BasicConstraints(false));
+        certGenerator.addExtension(X509Extensions.BasicConstraints, true, new BasicConstraints(
+                false));
 
         /*
          * Adds the Key Usage extension.
          */
         certGenerator.addExtension(X509Extensions.KeyUsage, true, new KeyUsage(
-                KeyUsage.digitalSignature | KeyUsage.nonRepudiation
-                        | KeyUsage.keyEncipherment | KeyUsage.keyAgreement
-                        | KeyUsage.keyCertSign));
+                KeyUsage.digitalSignature | KeyUsage.nonRepudiation | KeyUsage.keyEncipherment
+                        | KeyUsage.keyAgreement | KeyUsage.keyCertSign));
 
         /*
          * Adds the Netscape certificate type extension.
          */
-        certGenerator.addExtension(MiscObjectIdentifiers.netscapeCertType,
-                false, new NetscapeCertType(NetscapeCertType.sslClient
-                        | NetscapeCertType.smime));
-
-        /*
-         * Adds the authority key identifier extension.
-         * Bruno pointed out that this is not needed, as the authority's key is never checked in this setup!
-         * so I am commenting it out, to be removed at a later date.
-         *
-
-        AuthorityKeyIdentifierStructure authorityKeyIdentifier;
-        try {
-            authorityKeyIdentifier = new AuthorityKeyIdentifierStructure(
-                    service.certificate.getPublicKey());
-        } catch (InvalidKeyException e) {
-            throw new Exception("failed to parse CA cert. This should never happen", e);
-        }
-
-        certGenerator.addExtension(X509Extensions.AuthorityKeyIdentifier,
-                false, authorityKeyIdentifier);
-        */
+        certGenerator.addExtension(MiscObjectIdentifiers.netscapeCertType, false,
+                new NetscapeCertType(NetscapeCertType.sslClient | NetscapeCertType.smime));
 
         /*
          * Adds the subject key identifier extension.
          */
-        SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifierStructure(
-                subjectPubKey);
-        certGenerator.addExtension(X509Extensions.SubjectKeyIdentifier, false,
-                subjectKeyIdentifier);
+        SubjectKeyIdentifier subjectKeyIdentifier = new SubjectKeyIdentifierStructure(subjectPubKey);
+        certGenerator
+                .addExtension(X509Extensions.SubjectKeyIdentifier, false, subjectKeyIdentifier);
 
         /*
          * Adds the subject alternative-name extension (critical).
@@ -290,9 +287,10 @@ public class CertCreator {
         if (webId != null) {
             GeneralNames subjectAltNames = new GeneralNames(new GeneralName(
                     GeneralName.uniformResourceIdentifier, webId));
-            certGenerator.addExtension(X509Extensions.SubjectAlternativeName,
-                    true, subjectAltNames);
-        } else throw new Exception("WebId not set!");
+            certGenerator
+                    .addExtension(X509Extensions.SubjectAlternativeName, true, subjectAltNames);
+        } else
+            throw new IllegalArgumentException("Web ID not set!");
 
         /*
          * Creates and sign this certificate with the private key corresponding
@@ -302,11 +300,8 @@ public class CertCreator {
 
         /*
          * Checks that this certificate has indeed been correctly signed.
-         * No need nobody will verify, but anyway...
          */
-        //todo: does not work for some reason... I get: java.security.InvalidKeyException: Public key presented not for certificate signature
-      //  cert.verify(issuerPubKey);
-
+        cert.verify(issuerPubKey);
     }
 
     public Date getEndDate() {
@@ -314,7 +309,8 @@ public class CertCreator {
             long endtime;
             if (durationInDays != 0 || durationInHours != 0) {
                 endtime = getStartDate().getTime();
-                endtime += durationInDays * 24 * 60 * 60 * 1000 + (long) (durationInHours * 60 * 60 * 1000);
+                endtime += durationInDays * 24 * 60 * 60 * 1000
+                        + (long) (durationInHours * 60 * 60 * 1000);
             } else {
                 endtime = startDate.getTime() + 365L * 24L * 60L * 60L * 1000L;
             }
@@ -322,7 +318,6 @@ public class CertCreator {
         }
         return endDate;
     }
-
 
     public Date getStartDate() {
         if (startDate == null) {

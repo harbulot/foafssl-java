@@ -55,6 +55,8 @@ import javax.servlet.http.HttpServlet;
 
 import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
 import net.java.dev.sommer.foafssl.cache.MemoryGraphCache;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.sail.SailException;
 
 
 /**
@@ -90,7 +92,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
     public final static String SIGNING_CERT_REQATTR = "net.java.dev.sommer.foafssl.login.signing_cert";
     public final static String SIGNING_PUBKEY_REQATTR = "net.java.dev.sommer.foafssl.login.signing_pubkey";
 
-//    protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new SesameFoafSslVerifier();
+    // protected final static FoafSslVerifier FOAF_SSL_VERIFIER = new
+    // SesameFoafSslVerifier();
 
     protected volatile PrivateKey privateKey = null;
     protected volatile PublicKey publicKey = null;
@@ -123,12 +126,12 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             }
         }
         String alias = getInitParameter(ALIAS_INITPARAM);
-        Certificate cert = null;
-        PrivateKey pkey = null;
+        Certificate certificate = null;
+        PrivateKey privateKey = null;
 
         try {
 
-            //todo: this should be done via lookup
+            // todo: this should be done via lookup
             GraphCacheLookup.setCache(new MemoryGraphCache());
 
         } catch (Exception e) {
@@ -141,13 +144,13 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             Context ctx = (Context) initCtx.lookup("java:comp/env");
             try {
                 try {
-                    cert = (Certificate) ctx.lookup(CERTIFICATE_JNDI_NAME);
+                    certificate = (Certificate) ctx.lookup(CERTIFICATE_JNDI_NAME);
                 } catch (NameNotFoundException e) {
                     LOG.log(Level.FINE, "JNDI name not found", e);
                 }
 
                 try {
-                    pkey = (PrivateKey) ctx.lookup(PRIVATEKEY_JNDI_NAME);
+                    privateKey = (PrivateKey) ctx.lookup(PRIVATEKEY_JNDI_NAME);
                 } catch (NameNotFoundException e) {
                     LOG.log(Level.FINE, "JNDI name not found", e);
                 }
@@ -235,7 +238,7 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             keyPasswordArray = keystorePasswordArray;
         }
 
-        if ((cert == null) || (pkey == null)) {
+        if ((certificate == null) || (privateKey == null)) {
             if (keyStore == null) {
                 try {
                     InputStream ksInputStream = null;
@@ -301,11 +304,11 @@ public abstract class AbstractIdpServlet extends HttpServlet {
                             "Invalid keystore configuration: alias unspecified or couldn't find key at alias: "
                                     + alias);
                 }
-                if (pkey == null) {
-                    pkey = (PrivateKey) keyStore.getKey(alias, keyPasswordArray);
+                if (privateKey == null) {
+                    privateKey = (PrivateKey) keyStore.getKey(alias, keyPasswordArray);
                 }
-                if (cert == null) {
-                    cert = keyStore.getCertificate(alias);
+                if (certificate == null) {
+                    certificate = keyStore.getCertificate(alias);
                 }
             } catch (UnrecoverableKeyException e) {
                 LOG.log(Level.SEVERE, "Error configuring servlet (could not load keystore).", e);
@@ -319,8 +322,8 @@ public abstract class AbstractIdpServlet extends HttpServlet {
             }
         }
 
-        this.certificate = cert;
-        this.publicKey = cert.getPublicKey();
-        this.privateKey = pkey;
+        this.certificate = certificate;
+        this.publicKey = certificate.getPublicKey();
+        this.privateKey = privateKey;
     }
 }

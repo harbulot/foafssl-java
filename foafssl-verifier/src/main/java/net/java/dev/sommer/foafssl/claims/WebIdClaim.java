@@ -30,42 +30,49 @@ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
 POSSIBILITY OF SUCH DAMAGE.
  */
-package net.java.dev.sommer.foafssl.principals;
-
-import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
+package net.java.dev.sommer.foafssl.claims;
 
 import java.net.URI;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+
+import net.java.dev.sommer.foafssl.principals.DereferencedFoafSslPrincipal;
+import net.java.dev.sommer.foafssl.principals.WebIdPrincipal;
+import net.java.dev.sommer.foafssl.verifier.FoafSslVerifier;
 
 /**
- * This is an abstract class for a FOAF+SSL principal.
- * http://en.wikipedia.org/wiki/Security_principal
- * <p/>
- * todo: Perhaps one could have a WebIdClaim be composed of specialised princpals,
- * todo: each for an alternative  name in the certificate.
- *
+ * This is an abstract class for a FOAF+SSL WebId claim.
+ * 
  * @author Bruno Harbulot
+ * @author Henry Story
  */
 public class WebIdClaim {
- 
     /**
      * FOAF+SSL URI, a.k.a Web ID.
      */
-    protected final URI webid;
-    protected final PublicKey pubKey;
+    private final URI webid;
+    private final PublicKey pubKey;
 
-    protected boolean deferencedSecurely;
-    protected List<Certificate> foafServerCertificateChain;
+    private boolean deferencedSecurely;
+    //bruno says he is not quite sure why volatile is here and not elsewhere
+    private volatile List<Certificate> foafServerCertificateChain;
 
+    private boolean verified = false;
+    private LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
 
     /**
-     * Creates a FOAF+SSL X509Claim.
-     * Principals are uniquely identified by a URI, The URI refers to them.
-     *
-     * @param webid Web ID.
-     * @pram cert the cert in which the web id was found and for which one knows the client has a private key
+     * Creates a Web ID claim.
+     * 
+     * @param webid
+     *            Web ID.
+     * @param key
+     *            the public key claimed to be associated with this WebID
+     *            (obtained from the certificate).
      */
     public WebIdClaim(URI webid, PublicKey key) {
         this.webid = webid;
@@ -74,7 +81,7 @@ public class WebIdClaim {
 
     /**
      * Returns the Web ID.
-     *
+     * 
      * @return the Web ID.
      */
     public URI getWebId() {
@@ -82,22 +89,38 @@ public class WebIdClaim {
     }
 
     /**
+     * Returns the Web ID as an ASCII string.
+     */
+    public String toString() {
+        return webid.toASCIIString();
+    }
+
+    /**
      * Verifies a claimed Web ID and its public key against the public key
      * available by dereferencing this Web ID.
      */
     public boolean verify() {
-        return FoafSslVerifier.getVerifier().verify(this);
+        return verify(FoafSslVerifier.getVerifier());
     }
 
+    /**
+     * Verifies a claimed Web ID and its public key against the public key
+     * available by dereferencing this Web ID.
+     */
+    public boolean verify(FoafSslVerifier verifier) {
+        return verifier.verify(this);
+    }
 
     /**
      * Returns true if the FOAF file used to verify the Web ID has been
      * dereferenced securely.
-     * <p/>
-     * A similar function could return a number for different levels of authentication
-     * Or it could return a reasoning to explain what graphs it relied on, so that
-     * if in the future any of those were put into question this could change....
-     *
+     * <p>
+     * A similar function could return a number for different levels of
+     * authentication Or it could return a reasoning to explain what graphs it
+     * relied on, so that if in the future any of those were put into question
+     * this could change....
+     * </p>
+     * 
      * @return true if the FOAF file used to verify the Web ID has been
      *         dereferenced securely
      */
@@ -109,7 +132,7 @@ public class WebIdClaim {
      * Returns the certificate chain of the server hosting the dereferenced FOAF
      * file, if available. This could be used to be more choosy on which hosting
      * servers to trust.
-     *
+     * 
      * @return certificate chain of the server hosting the dereferenced FOAF
      *         file, if available. The list is unchangeable.
      */
@@ -118,9 +141,9 @@ public class WebIdClaim {
     }
 
     /**
-     * If the server from which the WebId when dereferenced serves a representation, has a certificate cjaom then this is
-     * saved here
-     *
+     * If the server from which the Web ID when dereferenced serves a
+     * representation, has a certificate chain then this is saved here
+     * 
      * @param serverCertificateChain
      */
     public void setServerCertificateChain(Certificate[] serverCertificateChain) {
@@ -131,13 +154,10 @@ public class WebIdClaim {
         }
     }
 
-
-    LinkedList<Throwable> problemDescription = new LinkedList<Throwable>();
-
     /**
-     * Describe the problem that was come accross
-     * (this perhaps should be addProblem, in case on can have a nbr of problems)
-     *
+     * Describe the problem that was come accross (this perhaps should be
+     * addProblem, in case on can have a nbr of problems)
+     * 
      * @param description
      */
     public void addProblem(Throwable description) {
@@ -147,8 +167,6 @@ public class WebIdClaim {
     public LinkedList<Throwable> getProblems() {
         return problemDescription;
     }
-
-    boolean verified = false;
 
     public void fail(String reason) {
         addProblem(new Error(reason));
@@ -170,7 +188,12 @@ public class WebIdClaim {
         return pubKey;
     }
 
-
+    public WebIdPrincipal getPrincipal() {
+        if (verified()) {
+            return new DereferencedFoafSslPrincipal(this.webid, this.pubKey,
+                    this.deferencedSecurely, this.foafServerCertificateChain);
+        } else {
+            return null;
+        }
+    }
 }
-
-

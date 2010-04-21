@@ -32,29 +32,36 @@ POSSIBILITY OF SUCH DAMAGE.
  */
 package net.java.dev.sommer.foafssl.verifier;
 
-import net.java.dev.sommer.foafssl.cache.GraphCache;
-import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
-import net.java.dev.sommer.foafssl.principals.WebIdClaim;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Resource;
-import org.openrdf.model.Value;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.query.*;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepositoryConnection;
-
 import java.math.BigInteger;
 import java.security.PublicKey;
 import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.RSAPublicKey;
-import java.util.*;
+import java.util.Arrays;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import net.java.dev.sommer.foafssl.cache.GraphCache;
+import net.java.dev.sommer.foafssl.cache.GraphCacheLookup;
+import net.java.dev.sommer.foafssl.claims.WebIdClaim;
+
+import org.openrdf.model.Literal;
+import org.openrdf.model.Resource;
+import org.openrdf.model.Value;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.query.Binding;
+import org.openrdf.query.BindingSet;
+import org.openrdf.query.MalformedQueryException;
+import org.openrdf.query.QueryEvaluationException;
+import org.openrdf.query.QueryLanguage;
+import org.openrdf.query.TupleQuery;
+import org.openrdf.query.TupleQueryResult;
+import org.openrdf.repository.RepositoryException;
+import org.openrdf.repository.sail.SailRepositoryConnection;
 
 /**
  * This class verifies FOAF+SSL certificates by dereferencing the FOAF file at
  * the given Web ID URI.
- *
+ * 
  * @author Henry Story.
  * @author Bruno Harbulot.
  */
@@ -64,15 +71,14 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
 
     static transient Logger log = Logger.getLogger(SesameFoafSslVerifier.class.getName());
 
-
     public boolean verify(WebIdClaim webid) {
-
 
         GraphCache cache = GraphCacheLookup.getCache();
 
-        //do a check that this is indeed a URL first
+        // do a check that this is indeed a URL first
         SailRepositoryConnection rep = cache.fetch(webid);
-        if (rep == null) return false;
+        if (rep == null)
+            return false;
 
         PublicKey publicKey = webid.getVerifiedPublicKey();
 
@@ -89,14 +95,13 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
                                 + "        rsa:modulus ?m ;"
                                 + "        rsa:public_exponent ?e ."
                                 + "   OPTIONAL { ?m cert:hex ?mod . }"
-                                + "   OPTIONAL { ?e cert:decimal ?exp . }"
-                                + "}");
+                                + "   OPTIONAL { ?e cert:decimal ?exp . }" + "}");
             } catch (MalformedQueryException e) {
-                log.log(Level.SEVERE,"Error in Query String!",e);
+                log.log(Level.SEVERE, "Error in Query String!", e);
                 webid.fail("SERVER ERROR - Please warn administrator");
                 return false;
             } catch (RepositoryException e) {
-                log.log(Level.SEVERE,"Error with repository",e);
+                log.log(Level.SEVERE, "Error with repository", e);
                 webid.fail("SERVER ERROR - Please warn administrator");
                 return false;
             }
@@ -107,22 +112,24 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
             try {
                 answer = query.evaluate();
             } catch (QueryEvaluationException e) {
-               log.log(Level.SEVERE,"Error evaluating Query",e);
-               webid.fail("SERVER ERROR - Please warn administrator");
-               return false;
+                log.log(Level.SEVERE, "Error evaluating Query", e);
+                webid.fail("SERVER ERROR - Please warn administrator");
+                return false;
             }
             try {
                 while (answer.hasNext()) {
                     BindingSet bindingSet = answer.next();
 
-                    //1. find the exponent
-                    BigInteger exp = toInteger(bindingSet.getBinding("e"), cert + "decimal", bindingSet.getBinding("exp"));
+                    // 1. find the exponent
+                    BigInteger exp = toInteger(bindingSet.getBinding("e"), cert + "decimal",
+                            bindingSet.getBinding("exp"));
                     if (exp == null || !exp.equals(certRsakey.getPublicExponent())) {
                         continue;
                     }
 
-                    //2. Find the modulus
-                    BigInteger mod = toInteger(bindingSet.getBinding("m"), cert + "hex", bindingSet.getBinding("mod"));
+                    // 2. Find the modulus
+                    BigInteger mod = toInteger(bindingSet.getBinding("m"), cert + "hex", bindingSet
+                            .getBinding("mod"));
                     if (mod == null || !mod.equals(certRsakey.getModulus())) {
                         continue;
                     }
@@ -131,7 +138,7 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
                     return true;
                 }
             } catch (QueryEvaluationException e) {
-                log.log(Level.SEVERE,"Error accessing query results",e);
+                log.log(Level.SEVERE, "Error accessing query results", e);
                 webid.fail("SERVER ERROR - Please warn administrator");
                 return false;
             }
@@ -142,28 +149,31 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
         return false;
     }
 
-
-       /**
+    /**
      * Transform an RDF representation of a number into a BigInteger
      * <p/>
-     * Passes a statement as two bindings and the relation between them.
-     * The subject is the number.
-     * If num is already a literal number, that is returned, otherwise if
-     * enough information from the relation to optstr exists, that is used.
-     *
-     * @param num    the number node
-     * @param optRel name of the relation to the literal
-     * @param optstr the literal representation if it exists
+     * Passes a statement as two bindings and the relation between them. The
+     * subject is the number. If num is already a literal number, that is
+     * returned, otherwise if enough information from the relation to optstr
+     * exists, that is used.
+     * 
+     * @param num
+     *            the number node
+     * @param optRel
+     *            name of the relation to the literal
+     * @param optstr
+     *            the literal representation if it exists
      * @return the big integer that num represents, or null if undetermined
      */
     static BigInteger toInteger(Binding num, String optRel, Binding optstr) {
-        if (null == num) return null;
+        if (null == num)
+            return null;
         Value numVal = num.getValue();
-        if (numVal instanceof Literal) {  //we do in fact have "ddd"^^type
+        if (numVal instanceof Literal) { // we do in fact have "ddd"^^type
             Literal ln = (Literal) numVal;
             String type = ln.getDatatype().toString();
             return toInteger_helper(ln.getLabel(), type);
-        } else if (numVal instanceof Resource) { //we had _:n type "ddd" .
+        } else if (numVal instanceof Resource) { // we had _:n type "ddd" .
             Value strVal = optstr.getValue();
             if (strVal != null && strVal instanceof Literal) {
                 Literal ls = (Literal) strVal;
@@ -174,31 +184,33 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
     }
 
     /**
-     * This transforms a literal into a number if possible
-     * ie, it returns the BigInteger of "ddd"^^type
-     *
-     * @param num  the string representation of the number
-     * @param type the type of the string representation
+     * This transforms a literal into a number if possible ie, it returns the
+     * BigInteger of "ddd"^^type
+     * 
+     * @param num
+     *            the string representation of the number
+     * @param type
+     *            the type of the string representation
      * @return the number
      */
     private static BigInteger toInteger_helper(String num, String type) {
-        if (type.equals(cert + "decimal") || type.equals(cert + "int") ||
-                type.equals(xsd + "integer") || type.equals(xsd + "int") ||
-                type.equals(xsd + "nonNegativeInteger")) { //cert:decimal is deprecated
+        if (type.equals(cert + "decimal") || type.equals(cert + "int")
+                || type.equals(xsd + "integer") || type.equals(xsd + "int")
+                || type.equals(xsd + "nonNegativeInteger")) {
+            // cert:decimal is deprecated
             return new BigInteger(num.trim(), 10);
         } else if (type.equals(cert + "hex")) {
             String strval = cleanHex(num);
             return new BigInteger(strval, 16);
         } else {
-            //it could be some other encoding - one should really write a special literal transformation class
+            // it could be some other encoding - one should really write a
+            // special literal transformation class
         }
         return null;
     }
 
-
-
-    static final private char[] hexchars = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
-            'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f'};
+    static final private char[] hexchars = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A',
+            'a', 'B', 'b', 'C', 'c', 'D', 'd', 'E', 'e', 'F', 'f' };
 
     static {
         Arrays.sort(hexchars);
@@ -207,8 +219,9 @@ public class SesameFoafSslVerifier extends FoafSslVerifier {
     /**
      * This takes any string and returns in order only those characters that are
      * part of a hex string
-     *
-     * @param strval any string
+     * 
+     * @param strval
+     *            any string
      * @return a pure hex string
      */
 
