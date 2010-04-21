@@ -67,11 +67,7 @@ public class X509ClaimTest {
     public static final URI TEST_WEB_ID_URI = URI.create(TEST_FOAF_LOCATION + "#me");
     public static final String TEST_CERT_FILENAME = "dummy-foafsslcert.pem";
     public static final URL TEST_FOAF_URL;
-<<<<<<< HEAD
-    static private HackableStreamHandlerFactory mockStreamHandlerFactory;
-=======
     X509Claim x509claim;
->>>>>>> bruno_foafssl/master
 
     final RSAPublicKey goodKey;
 

@@ -226,7 +226,7 @@ public class ShortRedirectIdpServlet extends AbstractIdpServlet {
             throw new NoSuchAlgorithmException("Unsupported key algorithm type.");
         }
 
-        URI webId = verifiedWebIDs.iterator().next().getWebid();
+        URI webId = verifiedWebIDs.iterator().next().getWebId();
         authnResp += "?" + WEBID_PARAMNAME + "="
                 + URLEncoder.encode(webId.toASCIIString(), "UTF-8");
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssZ");

@@ -32,12 +32,7 @@
 
 package net.java.dev.sommer.foafssl.util;
 
-<<<<<<< HEAD
-import org.junit.Before;
-import org.junit.Test;
-=======
 import static org.junit.Assert.assertTrue;
->>>>>>> bruno_foafssl/master
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;

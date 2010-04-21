@@ -229,7 +229,7 @@ public class ShortRedirectIdpServletTest {
         HttpTester request = new HttpTester();
         HttpTester response = new HttpTester();
         request.setHeader("Host", authnReqResourceRef.getHostDomain());
-        request.setMethod("POST");
+        request.setMethod("GET");
         String authReqUrlQueryPart = authnReqResourceRef.getQuery();
         request.setURI(authnReqResourceRef.getPath()
                 + (authReqUrlQueryPart != null ? "?" + authReqUrlQueryPart : ""));

@@ -2,13 +2,12 @@
 	pageEncoding="UTF-8"%>
 <%@page import="net.java.dev.sommer.foafssl.login.AbstractIdpServlet"%>
 <%@page import="java.util.*"%>
-<%@page import="net.java.dev.sommer.foafssl.principals.X509Claim"%>
-<%@page import="net.java.dev.sommer.foafssl.principals.WebIdClaim"%>
 <%@page import="java.security.PublicKey"%>
 <%@page import="java.security.interfaces.RSAPublicKey"%>
 <%@page import="org.bouncycastle.openssl.PEMWriter"%>
 <%@page import="java.security.cert.Certificate"%>
-<html>
+<%@page import="net.java.dev.sommer.foafssl.claims.X509Claim"%>
+<%@page import="net.java.dev.sommer.foafssl.claims.WebIdClaim"%><html>
 <head>
 <title>WebId Login Service</title>
 </head>
